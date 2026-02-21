@@ -1,0 +1,44 @@
+<div class="container py-5 my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+      <h1 class="text-center mb-5">Get in Touch</h1>
+
+      <div class="alert alert-info text-center mb-5">
+        <i class="bi bi-envelope-paper fs-1 d-block mb-3"></i>
+        <h4>Coming Soon 🚀</h4>
+        <p class="mb-0">Real contact form & support coming with the backend</p>
+      </div>
+
+      <!-- Placeholder form – looks real but doesn't send yet -->
+      <form (ngSubmit)="onSubmit()" #contactForm="ngForm" class="p-4 bg-light rounded-4 shadow-sm">
+        <div class="mb-4">
+          <label for="name" class="form-label fw-medium">Your Name</label>
+          <input type="text" class="form-control form-control-lg" id="name" 
+                 [(ngModel)]="name" name="name" required placeholder="John Doe">
+        </div>
+
+        <div class="mb-4">
+          <label for="email" class="form-label fw-medium">Email Address</label>
+          <input type="email" class="form-control form-control-lg" id="email" 
+                 [(ngModel)]="email" name="email" required placeholder="you@example.com">
+        </div>
+
+        <div class="mb-4">
+          <label for="message" class="form-label fw-medium">Message</label>
+          <textarea class="form-control form-control-lg" id="message" rows="5"
+                    [(ngModel)]="message" name="message" required 
+                    placeholder="Tell us what you're thinking..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100" 
+                [disabled]="!contactForm.valid">
+          Send Message
+        </button>
+      </form>
+
+      <p class="text-center text-muted mt-5 small">
+        We'll get back to you as soon as possible once the system is live.
+      </p>
+    </div>
+  </div>
+</div>

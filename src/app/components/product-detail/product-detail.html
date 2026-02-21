@@ -1,0 +1,249 @@
+<!-- product-detail.component.html -->
+
+<!-- Loading State -->
+<div class="pd-loading" *ngIf="loading">
+  <div class="pd-container">
+    <div class="pd-grid">
+      <div class="skel-gallery">
+        <div class="skel-main-img shimmer"></div>
+        <div class="skel-thumbs">
+          <div class="skel-thumb shimmer" *ngFor="let i of [1,2,3,4]"></div>
+        </div>
+      </div>
+      <div class="skel-info">
+        <div class="skel-line w-30 shimmer"></div>
+        <div class="skel-line w-70 shimmer" style="height:48px"></div>
+        <div class="skel-line w-40 shimmer"></div>
+        <div class="skel-line w-90 shimmer"></div>
+        <div class="skel-line w-80 shimmer"></div>
+        <div class="skel-line w-50 shimmer" style="height:52px; margin-top:2rem; border-radius:30px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error State -->
+<div class="pd-error" *ngIf="!loading && error">
+  <div class="error-icon">🌸</div>
+  <h2>Product not found</h2>
+  <p>The product you're looking for might have moved or is no longer available.</p>
+  <a routerLink="/products" class="btn-back">Browse All Products</a>
+</div>
+
+<!-- Product Detail -->
+<div class="pd-page" *ngIf="!loading && !error && product" [class.visible]="pageVisible">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-bar">
+    <div class="pd-container">
+      <nav class="breadcrumb-nav">
+        <a routerLink="/" class="bc-link">Home</a>
+        <span class="bc-sep">›</span>
+        <a routerLink="/products" class="bc-link">Products</a>
+        <span class="bc-sep">›</span>
+        <span class="bc-current" *ngIf="product.category">{{ product.category.name }}</span>
+        <span class="bc-sep" *ngIf="product.category">›</span>
+        <span class="bc-current">{{ product.name }}</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Product Section -->
+  <div class="pd-container">
+    <div class="pd-grid">
+
+      <!-- LEFT: Image Gallery -->
+      <div class="gallery-col">
+
+        <!-- Main Image -->
+        <div class="main-img-wrap">
+          <div class="main-img-inner">
+            <img
+              [src]="activeImage"
+              [alt]="product.name"
+              class="main-img"
+              [class.zoomed]="isZoomed"
+              (mouseenter)="isZoomed = true"
+              (mouseleave)="isZoomed = false"
+              onerror="this.onerror=null; this.style.display='none'; this.parentElement.classList.add('img-error')">
+          </div>
+
+          <!-- Image nav arrows -->
+          <button class="img-nav prev" (click)="prevImage()" *ngIf="images.length > 1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="img-nav next" (click)="nextImage()" *ngIf="images.length > 1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <!-- Stock badge on image -->
+          <div class="img-stock-badge out" *ngIf="product.stock === 0">Sold Out</div>
+          <div class="img-stock-badge in" *ngIf="product.stock > 0 && product.stock <= 5">Only {{ product.stock }} left!</div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="thumbnails" *ngIf="images.length > 1">
+          <button
+            *ngFor="let img of images; let i = index"
+            class="thumb-btn"
+            [class.active]="activeImageIndex === i"
+            (click)="setActiveImage(i)">
+            <img [src]="img" [alt]="product.name + ' ' + (i+1)"
+                 onerror="this.onerror=null; this.parentElement.classList.add('thumb-error')">
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Product Info -->
+      <div class="info-col">
+
+        <!-- Category + Badge -->
+        <div class="info-top-row">
+          <span class="info-category" *ngIf="product.category">{{ product.category.name }}</span>
+          <span class="info-badge new" *ngIf="isNew">New Arrival</span>
+          <span class="info-badge trending" *ngIf="product.trending">🔥 Trending</span>
+        </div>
+
+        <!-- Product Name -->
+        <h1 class="product-title">{{ product.name }}</h1>
+
+        <!-- Price -->
+        <div class="price-row">
+          <span class="price-main">₹{{ product.price }}</span>
+          <span class="price-original" *ngIf="product.originalPrice">₹{{ product.originalPrice }}</span>
+          <span class="price-off" *ngIf="product.originalPrice">
+            {{ getDiscount() }}% OFF
+          </span>
+        </div>
+
+        <!-- Rating placeholder -->
+        <div class="rating-row">
+          <div class="stars">
+            <span *ngFor="let s of [1,2,3,4,5]" class="star" [class.filled]="s <= 4">★</span>
+          </div>
+          <span class="rating-count">4.0 · 120 reviews</span>
+        </div>
+
+        <div class="info-divider"></div>
+
+        <!-- Description -->
+        <p class="product-desc" *ngIf="product.description">{{ product.description }}</p>
+
+        <!-- Size Selector -->
+        <div class="selector-group" *ngIf="sizes.length > 0">
+          <div class="selector-label">
+            Size
+            <span class="selected-val">{{ selectedSize || 'Select' }}</span>
+          </div>
+          <div class="size-options">
+            <button
+              *ngFor="let size of sizes"
+              class="size-btn"
+              [class.selected]="selectedSize === size"
+              (click)="selectSize(size)">
+              {{ size }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Color Selector -->
+        <div class="selector-group" *ngIf="colors.length > 0">
+          <div class="selector-label">
+            Color
+            <span class="selected-val">{{ selectedColor || 'Select' }}</span>
+          </div>
+          <div class="color-options">
+            <button
+              *ngFor="let color of colors"
+              class="color-btn"
+              [class.selected]="selectedColor === color.name"
+              [style.background]="color.hex"
+              [title]="color.name"
+              (click)="selectColor(color.name)">
+              <span class="color-check" *ngIf="selectedColor === color.name">✓</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quantity Selector -->
+        <div class="selector-group">
+          <div class="selector-label">Quantity</div>
+          <div class="qty-control">
+            <button class="qty-btn" (click)="decrementQty()" [disabled]="qty <= 1">−</button>
+            <span class="qty-val">{{ qty }}</span>
+            <button class="qty-btn" (click)="incrementQty()" [disabled]="qty >= product.stock">+</button>
+            <span class="qty-stock" *ngIf="product.stock > 0">{{ product.stock }} available</span>
+          </div>
+        </div>
+
+        <div class="info-divider"></div>
+
+        <!-- CTA Buttons -->
+        <div class="cta-group" *ngIf="product.stock > 0">
+          <button class="btn-add-cart" (click)="addToCart()" [class.added]="addedToCart">
+            <span *ngIf="!addedToCart">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Add to Cart
+            </span>
+            <span *ngIf="addedToCart">✓ Added to Cart!</span>
+          </button>
+          <a routerLink="/cart" class="btn-buy-now">Buy Now</a>
+        </div>
+
+        <div class="out-of-stock-msg" *ngIf="product.stock === 0">
+          <span>😔 This item is currently out of stock</span>
+        </div>
+
+        <!-- Perks -->
+        <div class="perks-row">
+          <div class="perk">
+            <span class="perk-icon">🚚</span>
+            <span>Free delivery above ₹999</span>
+          </div>
+          <div class="perk">
+            <span class="perk-icon">↩️</span>
+            <span>7-day easy returns</span>
+          </div>
+          <div class="perk">
+            <span class="perk-icon">🔒</span>
+            <span>Secure payment</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <section class="related-section" *ngIf="relatedProducts.length > 0">
+    <div class="pd-container">
+      <div class="related-head">
+        <p class="section-eyebrow">You may also like</p>
+        <h2 class="related-title">Similar <em>Styles</em></h2>
+      </div>
+
+      <div class="related-grid">
+        <div
+          *ngFor="let p of relatedProducts | slice:0:4; let i = index"
+          class="related-card"
+          [style.animation-delay]="(i * 0.1) + 's'"
+          (click)="goToProduct(p.id)">
+          <div class="related-img-wrap">
+            <img [src]="p.image" [alt]="p.name" class="related-img"
+                 onerror="this.onerror=null; this.style.display='none'">
+            <div class="related-overlay">
+              <span>View Details</span>
+            </div>
+          </div>
+          <div class="related-info">
+            <span class="related-cat" *ngIf="p.category">{{ p.category.name }}</span>
+            <h4 class="related-name">{{ p.name }}</h4>
+            <span class="related-price">₹{{ p.price }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

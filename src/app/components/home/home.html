@@ -1,0 +1,310 @@
+<!-- =============================================
+     HOME PAGE — Premium Kurti Ecommerce
+     ============================================= -->
+
+<!-- ── HERO SECTION ──────────────────────────── -->
+<section class="hero-section">
+  <!-- Floating blobs background -->
+  <div class="hero-blob blob-1"></div>
+  <div class="hero-blob blob-2"></div>
+  <div class="hero-blob blob-3"></div>
+
+  <div class="hero-container">
+    <!-- Left: Text -->
+    <div class="hero-text" [class.visible]="heroVisible">
+      <span class="hero-eyebrow">New Season Collection</span>
+      <h1 class="hero-headline">
+        Wear the Art<br>
+        <em>of Tradition</em>
+      </h1>
+      <p class="hero-sub">
+        Handcrafted kurtis where heritage meets contemporary elegance.
+        Each piece tells a story.
+      </p>
+      <div class="hero-cta-row">
+        <a routerLink="/products" class="btn-primary-hero">
+          Explore Collection
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a routerLink="/categories" class="btn-ghost-hero">Browse Categories</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">500+</span><span class="stat-label">Designs</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">50K+</span><span class="stat-label">Happy Customers</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Authentic</span></div>
+      </div>
+    </div>
+
+    <!-- Right: Hero Image Carousel -->
+    <div class="hero-visual" [class.visible]="heroVisible">
+      <div class="hero-img-ring"></div>
+      <div class="hero-img-card">
+        <div class="hero-slides" [style.transform]="'translateX(-' + (heroSlide * 100) + '%)'">
+          <div class="hero-slide" *ngFor="let slide of heroSlides">
+            <img [src]="slide.image" [alt]="slide.title" class="hero-img" onerror="this.onerror=null; this.style.display='none'; this.parentElement.style.background='#FFE3E1'">
+          </div>
+        </div>
+        <div class="hero-slide-info">
+          <span class="slide-tag">{{ heroSlides[heroSlide]?.tag }}</span>
+          <span class="slide-title">{{ heroSlides[heroSlide]?.title }}</span>
+        </div>
+      </div>
+
+      <!-- Slide dots -->
+      <div class="hero-dots">
+        <button
+          *ngFor="let s of heroSlides; let i = index"
+          class="hero-dot"
+          [class.active]="i === heroSlide"
+          (click)="setHeroSlide(i)">
+        </button>
+      </div>
+
+      <!-- Floating badge -->
+      <div class="hero-float-badge">
+        <span class="float-icon">✦</span>
+        <span>Free Shipping above ₹999</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── OFFER BANNER STRIP ──────────────────────────── -->
+<div class="offer-strip">
+  <div class="offer-track">
+    <span *ngFor="let item of offerItems" class="offer-item">
+      <span class="offer-dot">✦</span> {{ item }}
+    </span>
+    <!-- Duplicate for seamless loop -->
+    <span *ngFor="let item of offerItems" class="offer-item" aria-hidden="true">
+      <span class="offer-dot">✦</span> {{ item }}
+    </span>
+  </div>
+</div>
+
+
+<!-- ── CATEGORIES SHOWCASE ──────────────────────────── -->
+<section class="section-wrapper" #categoriesSection>
+  <div class="section-head">
+    <p class="section-eyebrow">Shop by Style</p>
+    <h2 class="section-title">Explore <em>Categories</em></h2>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loadingCategories" class="skeleton-row">
+    <div class="skeleton-cat" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <!-- Categories Grid -->
+  <div class="categories-grid" *ngIf="!loadingCategories">
+    <a
+      *ngFor="let cat of categories; let i = index"
+      class="cat-card"
+      [class.visible]="catsVisible"
+      [style.animation-delay]="(i * 0.1) + 's'"
+      routerLink="/categories"
+      [queryParams]="{ id: cat.id }">
+      <div class="cat-icon-wrap">
+        <span class="cat-icon">{{ getCatEmoji(cat.name) }}</span>
+      </div>
+      <span class="cat-name">{{ cat.name }}</span>
+      <span class="cat-arrow">→</span>
+    </a>
+
+    <div *ngIf="categories.length === 0" class="coming-soon-card">
+      <span>Categories coming soon ✨</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── TRENDING PRODUCTS ──────────────────────────── -->
+<section class="section-wrapper section-alt" #trendingSection>
+  <div class="section-head">
+    <p class="section-eyebrow">What's Hot</p>
+    <h2 class="section-title">Trending <em>Picks</em></h2>
+    <p class="section-sub">Discover what everyone's loving this season</p>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div *ngIf="loadingTrending" class="products-grid">
+    <div class="product-skeleton" *ngFor="let i of [1,2,3,4]">
+      <div class="skel-img"></div>
+      <div class="skel-line w-70"></div>
+      <div class="skel-line w-40"></div>
+      <div class="skel-line w-50"></div>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-grid" *ngIf="!loadingTrending && trendingProducts.length">
+    <div
+      *ngFor="let p of trendingProducts | slice:0:4; let i = index"
+      class="product-card"
+      [class.visible]="trendingVisible"
+      [style.animation-delay]="(i * 0.12) + 's'"
+      (click)="goToProduct(p.id)">
+
+      <div class="product-img-wrap">
+        <span class="product-badge badge-trending">🔥 Trending</span>
+        <img
+          [src]="p.image"
+          [alt]="p.name"
+          class="product-img"
+      onerror="this.onerror=null; this.style.display='none'; this.parentElement.style.background='#FFE3E1'">
+        <div class="product-overlay">
+          <button class="overlay-btn" (click)="$event.stopPropagation(); goToProduct(p.id)">
+            View Details
+          </button>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <span class="product-category" *ngIf="p.category">{{ p.category.name }}</span>
+        <h3 class="product-name">{{ p.name }}</h3>
+        <p class="product-desc" *ngIf="p.description">
+          {{ p.description.length > 55 ? (p.description | slice:0:55) + '…' : p.description }}
+        </p>
+        <div class="product-footer">
+          <span class="product-price">₹{{ p.price }}</span>
+          <span class="stock-tag in-stock" *ngIf="p.stock > 0">In Stock</span>
+          <span class="stock-tag out-stock" *ngIf="p.stock === 0">Sold Out</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loadingTrending && !trendingProducts.length" class="empty-state">
+    <span class="empty-icon">🛍️</span>
+    <p>Trending products coming soon!</p>
+  </div>
+
+  <div class="section-cta" *ngIf="!loadingTrending && trendingProducts.length">
+    <a routerLink="/products" class="view-all-btn">
+      View All Products
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+
+<!-- ── SPECIAL OFFER BANNER ──────────────────────────── -->
+<section class="offer-banner-section">
+  <div class="offer-banner-inner">
+    <div class="offer-banner-text">
+      <span class="offer-tag">Limited Time</span>
+      <h2 class="offer-headline">Up to <em>40% Off</em> on<br>Selected Kurtis</h2>
+      <p class="offer-desc">Don't miss out on our biggest sale of the season. Handpicked styles at unbeatable prices.</p>
+      <a routerLink="/products" class="offer-cta-btn">Shop the Sale</a>
+    </div>
+    <div class="offer-banner-visual">
+      <div class="offer-circle c1"></div>
+      <div class="offer-circle c2"></div>
+      <div class="offer-circle c3"></div>
+      <div class="offer-discount-badge">
+        <span class="disc-num">40</span>
+        <span class="disc-sym">%<br>OFF</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── NEW ARRIVALS ──────────────────────────── -->
+<section class="section-wrapper" #newArrivalsSection>
+  <div class="section-head">
+    <p class="section-eyebrow">Just Landed</p>
+    <h2 class="section-title">New <em>Arrivals</em></h2>
+    <p class="section-sub">Fresh styles added every week</p>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div *ngIf="loadingRecent" class="products-grid">
+    <div class="product-skeleton" *ngFor="let i of [1,2,3,4]">
+      <div class="skel-img"></div>
+      <div class="skel-line w-70"></div>
+      <div class="skel-line w-40"></div>
+      <div class="skel-line w-50"></div>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-grid" *ngIf="!loadingRecent && recentProducts.length">
+    <div
+      *ngFor="let p of recentProducts | slice:0:4; let i = index"
+      class="product-card"
+      [class.visible]="newArrivalsVisible"
+      [style.animation-delay]="(i * 0.12) + 's'"
+      (click)="goToProduct(p.id)">
+
+      <div class="product-img-wrap">
+        <span class="product-badge badge-new">✨ New</span>
+        <img
+          [src]="p.image"
+          [alt]="p.name"
+          class="product-img"
+          onerror="this.onerror=null; this.style.display='none'; this.parentElement.style.background='#FFE3E1'">
+        <div class="product-overlay">
+          <button class="overlay-btn" (click)="$event.stopPropagation(); goToProduct(p.id)">
+            View Details
+          </button>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <span class="product-category" *ngIf="p.category">{{ p.category.name }}</span>
+        <h3 class="product-name">{{ p.name }}</h3>
+        <p class="product-desc" *ngIf="p.description">
+          {{ p.description.length > 55 ? (p.description | slice:0:55) + '…' : p.description }}
+        </p>
+        <div class="product-footer">
+          <span class="product-price">₹{{ p.price }}</span>
+          <span class="stock-tag in-stock" *ngIf="p.stock > 0">In Stock</span>
+          <span class="stock-tag out-stock" *ngIf="p.stock === 0">Sold Out</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loadingRecent && !recentProducts.length" class="empty-state">
+    <span class="empty-icon">🌸</span>
+    <p>New arrivals coming soon!</p>
+  </div>
+
+  <div class="section-cta" *ngIf="!loadingRecent && recentProducts.length">
+    <a routerLink="/products" class="view-all-btn">
+      View All Products
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+
+<!-- ── WHY CHOOSE US ──────────────────────────── -->
+<section class="why-section" #whySection>
+  <div class="why-inner">
+    <div class="section-head light">
+      <p class="section-eyebrow light-eye">Our Promise</p>
+      <h2 class="section-title light-title">Why Choose <em>Us?</em></h2>
+    </div>
+
+    <div class="why-grid">
+      <div
+        *ngFor="let feat of features; let i = index"
+        class="why-card"
+        [class.visible]="whyVisible"
+        [style.animation-delay]="(i * 0.15) + 's'">
+        <div class="why-icon-wrap">
+          <span class="why-icon">{{ feat.icon }}</span>
+        </div>
+        <h3 class="why-title">{{ feat.title }}</h3>
+        <p class="why-desc">{{ feat.desc }}</p>
+      </div>
+    </div>
+  </div>
+</section>

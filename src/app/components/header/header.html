@@ -1,0 +1,134 @@
+<header class="site-header" [class.scrolled]="isScrolled">
+  <div class="header-inner">
+
+    <!-- Logo -->
+    <a routerLink="/" class="brand-logo">
+      <span class="brand-icon">✦</span>
+      <span class="brand-text">Kurta<span class="brand-accent">Kart</span></span>
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="desktop-nav">
+      <ul class="nav-list">
+        <li>
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            Home
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" routerLink="/about" routerLinkActive="active">
+            About
+          </a>
+        </li>
+
+        <!-- Categories Dropdown -->
+        <li class="dropdown-wrapper" (mouseenter)="openDropdown()" (mouseleave)="closeDropdown()">
+          <a class="nav-link dropdown-trigger" [class.active]="dropdownOpen">
+            Categories
+            <svg class="chevron" [class.rotated]="dropdownOpen" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+
+          <div class="dropdown-menu" [class.open]="dropdownOpen">
+            <div class="dropdown-inner">
+              <div class="dropdown-header">Shop by Category</div>
+
+              <ng-container *ngIf="categories$ | async as cats; else loading">
+                <ng-container *ngIf="cats.length > 0; else empty">
+                  <a *ngFor="let cat of cats"
+                     class="dropdown-item"
+                     routerLink="/categories"
+                     [queryParams]="{ id: cat.id }"
+                     (click)="closeDropdown()">
+                    <span class="item-dot">✦</span>
+                    <span>{{ cat.name }}</span>
+                  </a>
+                </ng-container>
+                <ng-template #empty>
+                  <div class="dropdown-empty">
+                    <span>Coming soon 🚀</span>
+                  </div>
+                </ng-template>
+              </ng-container>
+
+              <ng-template #loading>
+                <div class="dropdown-loading">
+                  <div class="loading-dot"></div>
+                  <div class="loading-dot"></div>
+                  <div class="loading-dot"></div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </li>
+
+        <li>
+          <a class="nav-link" routerLink="/contact" routerLinkActive="active">
+            Contact
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Right Actions -->
+    <div class="header-actions">
+      <!-- Cart -->
+      <a routerLink="/cart" class="cart-btn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </a>
+
+      <!-- Mobile Hamburger -->
+      <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="mobileMenuOpen">
+    <nav class="mobile-nav">
+      <a class="mobile-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMobileMenu()">Home</a>
+      <a class="mobile-link" routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">About</a>
+
+      <div class="mobile-dropdown">
+        <button class="mobile-link mobile-cat-toggle" (click)="toggleMobileCategories()">
+          Categories
+          <svg class="chevron" [class.rotated]="mobileCatOpen" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="mobile-categories" [class.open]="mobileCatOpen">
+          <ng-container *ngIf="categories$ | async as cats">
+            <a *ngFor="let cat of cats"
+               class="mobile-cat-item"
+               routerLink="/categories"
+               [queryParams]="{ id: cat.id }"
+               (click)="closeMobileMenu()">
+              ✦ {{ cat.name }}
+            </a>
+            <span *ngIf="cats.length === 0" class="mobile-cat-item muted">Coming soon 🚀</span>
+          </ng-container>
+        </div>
+      </div>
+
+      <a class="mobile-link" routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()">Contact</a>
+      <a class="mobile-link cart-mobile" routerLink="/cart" (click)="closeMobileMenu()">
+        🛍️ Cart <span class="cart-badge-mobile" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </a>
+    </nav>
+  </div>
+
+</header>
+
+<!-- Overlay -->
+<div class="mobile-overlay" [class.show]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
