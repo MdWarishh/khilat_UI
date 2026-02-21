@@ -16,13 +16,13 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   stock: number;
   isActive: boolean;
   trending: string; // 'y' or 'n'
   createdAt: string;
   category: Category;
   productImages: ProductImage[];
-  
   // Frontend computed property
   image?: string; // Will be set from productImages[0]
 }

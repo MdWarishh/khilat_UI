@@ -111,7 +111,7 @@
         <!-- Price -->
         <div class="price-row">
           <span class="price-main">₹{{ product.price }}</span>
-          <span class="price-original" *ngIf="product.originalPrice">₹{{ product.originalPrice }}</span>
+          <!-- <span class="price-original" *ngIf="product?.originalPrice">₹{{ product?.originalPrice }}</span> -->
           <span class="price-off" *ngIf="product.originalPrice">
             {{ getDiscount() }}% OFF
           </span>
