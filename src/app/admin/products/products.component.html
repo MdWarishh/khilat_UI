@@ -1,0 +1,121 @@
+<div class="admin-products-page">
+
+  <div class="page-header">
+    <h1>Manage Products</h1>
+    <button class="btn-add" (click)="openAddForm()">+ Add New Product</button>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-alert" *ngIf="error">{{ error }}</div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Products Table -->
+  <div class="products-table-container" *ngIf="!loading && products.length > 0">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products">
+          <td>
+            <img [src]="product.images?.[0]?.url || '/assets/placeholder.jpg'" alt="{{product.name}}" class="product-thumb">
+          </td>
+          <td>{{ product.name }}</td>
+          <td>₹{{ product.price | number:'1.0-0' }}</td>
+          <td [class.out-of-stock]="product.stock === 0">
+            {{ product.stock }}
+          </td>
+          <td>{{ product.category?.name || 'Uncategorized' }}</td>
+          <td class="actions">
+            <button class="btn-edit" (click)="openEditForm(product)">Edit</button>
+            <button class="btn-delete" (click)="deleteProduct(product.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Products -->
+  <div class="no-products" *ngIf="!loading && products.length === 0">
+    <div class="empty-icon">🛍️</div>
+    <h2>No products found</h2>
+    <p>Start by adding your first product</p>
+    <button class="btn-add" (click)="openAddForm()">Add Product</button>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+        <button class="btn-close" (click)="showForm = false">×</button>
+      </div>
+
+      <form (ngSubmit)="submitForm()" class="product-form">
+
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" [(ngModel)]="formData.name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description" rows="4"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Price (₹) *</label>
+            <input type="number" [(ngModel)]="formData.price" name="price" required min="1">
+          </div>
+          <div class="form-group">
+            <label>Stock *</label>
+            <input type="number" [(ngModel)]="formData.stock" name="stock" required min="0">
+          </div>
+        </div>
+
+        <!-- Images Upload -->
+        <div class="form-group">
+          <label>Product Images</label>
+          <input type="file" multiple accept="image/*" (change)="onFileChange($event)">
+          <div class="file-preview" *ngIf="selectedFiles.length > 0">
+            <div *ngFor="let file of selectedFiles; let i = index" class="preview-item">
+              <img [src]="file | fileToUrl" alt="preview">
+              <button (click)="selectedFiles.splice(i, 1)">×</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Images (Edit mode only) -->
+        <div class="existing-images" *ngIf="editingProduct?.images?.length">
+          <label>Current Images</label>
+          <div class="image-grid">
+            <div *ngFor="let img of editingProduct.images" class="image-item">
+              <img [src]="img.url" alt="product image">
+              <button class="btn-remove-img" (click)="onDeleteImage(img.id)">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="showForm = false">Cancel</button>
+          <button type="submit" class="btn-save" [disabled]="loading">
+            {{ editingProduct ? 'Update Product' : 'Save Product' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

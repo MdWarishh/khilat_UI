@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Home } from './components/home/home';
 import { AdminGuard } from './guards/admin-guard';
-import { AdminLoginComponent } from './admin/login/login';
-import { AdminDashboardComponent } from './admin/dashboard/dashboard';
-import { AdminProductsComponent } from './admin/products/products';
+import { AdminLoginComponent } from './admin/login/login.component';
+import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { AdminProductsComponent } from './admin/products/products.component';
 
 const routes: Routes = [
   {
@@ -16,7 +16,7 @@ const routes: Routes = [
     path: 'admin',
     canActivate: [AdminGuard],
     children: [
-      { path: '', component: AdminDashboardComponent },
+      { path: '', component: DashboardComponent },
       { path: 'products', component: AdminProductsComponent },
       // Add more later, e.g., { path: 'categories', component: AdminCategoriesComponent }
     ]

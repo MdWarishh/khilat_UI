@@ -7,6 +7,9 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { Product }        from '../../models/product.model';
 import { environment }    from '../../../environments/environments';
+import { GuestService } from '../../services/guest.service';
+import { CartService } from '../../services/cart.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -27,6 +30,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   trendingProducts: Product[] = [];
   recentProducts:   Product[] = [];
   categories:       any[]     = [];
+  pendingQuantities: { [productId: number]: number } = {};
+    // temporary qty before adding to cart
 
   // ── Loading flags ───────────────────────────────────────────────
   loadingTrending   = true;
@@ -70,11 +75,14 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // ── IntersectionObserver ─────────────────────────────────────────
   private observer!: IntersectionObserver;
 
-  constructor(
-    private productService:  ProductService,
-    private categoryService: CategoryService,
-    private router: Router
-  ) {}
+private cartSub!: Subscription;
+
+constructor(
+  private productService:  ProductService,
+  private categoryService: CategoryService,
+  private cartService:     CartService,
+  private router: Router
+) {}
 
   ngOnInit(): void {
     this.loadTrending();
@@ -90,10 +98,69 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.setupScrollReveal();
   }
 
-  ngOnDestroy(): void {
-    clearInterval(this.slideInterval);
-    if (this.observer) this.observer.disconnect();
+ ngOnDestroy(): void {
+  clearInterval(this.slideInterval);
+  if (this.observer) this.observer.disconnect();
+  if (this.cartSub)  this.cartSub.unsubscribe();
+}
+
+
+// ── Cart & Quantity Logic ─────────────────────────────────────────────
+
+getProductQty(productId: number): number {
+  if (this.isInCart(productId)) {
+    return this.cartService.getItemQty(productId);
   }
+  // Nahi to user ne jo pending select kiya hai (default 1)
+  return this.pendingQuantities[productId] ?? 1;
+}
+
+isInCart(productId: number): boolean {
+  return this.cartService.isInCart(productId);
+}
+
+incrementProductQty(productId: number): void {
+  if (this.isInCart(productId)) {
+    this.cartService.increment(productId);
+  } else {
+    const current = this.pendingQuantities[productId] ?? 1;
+    this.pendingQuantities[productId] = current + 1;
+  }
+}
+
+decrementProductQty(productId: number): void {
+  if (this.isInCart(productId)) {
+    this.cartService.decrement(productId);
+  } else {
+    const current = this.pendingQuantities[productId] ?? 1;
+    if (current > 1) {
+      this.pendingQuantities[productId] = current - 1;
+    }
+  }
+}
+
+addToCart(product: Product): void {
+  const qty = this.getProductQty(product.id);
+
+  // Already cart mein hai to kuch mat badal (ya message dikha sakte hain baad mein)
+  if (this.isInCart(product.id)) {
+    return;
+  }
+
+  // Multiple items add karne ke liye loop
+  for (let i = 0; i < qty; i++) {
+    this.cartService.addItem({
+      productId: product.id,
+      name:      product.name,
+      price:     product.price,
+      image:     product.image || '',
+      category:  product.category?.name || '',
+    });
+  }
+
+  // Pending qty clear kar do (ab cartService handle karega)
+  delete this.pendingQuantities[product.id];
+}
 
   // ─────────────────────────────────────────────
   // DATA LOADING

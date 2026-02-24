@@ -1,0 +1,47 @@
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <h2>Khilat Kurti</h2>
+      <p>Admin Panel</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li *ngFor="let item of menuItems">
+          <a 
+            [routerLink]="item.route" 
+            routerLinkActive="active"
+            [class.logout]="item.action === 'logout'"
+            (click)="item.action === 'logout' ? logout() : null">
+            <span class="icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="admin-main">
+    <!-- Top Navbar -->
+    <header class="admin-navbar">
+      <div class="navbar-left">
+        <button class="menu-toggle">☰</button>
+        <h1>Dashboard</h1>
+      </div>
+
+      <div class="navbar-right">
+        <span class="admin-name">Admin</span>
+        <div class="profile-pic">AS</div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="admin-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+</div>

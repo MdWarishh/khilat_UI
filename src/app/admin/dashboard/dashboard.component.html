@@ -1,0 +1,68 @@
+<div class="dashboard-content">
+
+  <div class="welcome-bar">
+    <h2>Welcome back, Admin</h2>
+    <p>Here's what's happening in your store today</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👗</div>
+      <div class="stat-value">{{ stats.totalProducts }}</div>
+      <div class="stat-label">Total Products</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-value">{{ stats.totalOrders }}</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">₹</div>
+      <div class="stat-value">₹{{ stats.totalRevenue | number:'1.0-0' }}</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-value">{{ stats.pendingOrders }}</div>
+      <div class="stat-label">Pending Orders</div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="recent-orders">
+    <div class="section-header">
+      <h3>Recent Orders</h3>
+      <a href="#" class="view-all">View All →</a>
+    </div>
+
+    <div class="orders-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of recentOrders">
+            <td>{{ order.id }}</td>
+            <td>{{ order.customer }}</td>
+            <td>₹{{ order.amount }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="order.status">
+                {{ order.status | titlecase }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

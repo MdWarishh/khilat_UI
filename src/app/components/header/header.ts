@@ -1,21 +1,20 @@
-import { Component, inject, HostListener, OnInit } from '@angular/core';
+import { Component, inject, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CategoryService } from '../../services/category.service';
+import { CartService } from '../../services/cart.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    RouterLinkActive
-  ],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
+  private cartService = inject(CartService);
 
   categories$ = this.categoryService.getCategories();
 
@@ -23,19 +22,32 @@ export class Header implements OnInit {
   dropdownOpen    = false;
   mobileMenuOpen  = false;
   mobileCatOpen   = false;
-  cartCount       = 0;  // Replace with real cart service later
+  cartCount       = 0;
 
   private dropdownTimer: any;
+  private cartSub!: Subscription;
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Real-time cart count update
+    this.cartSub = this.cartService.cart$.subscribe(() => {
+      this.cartCount = this.cartService.getTotalCount();
+    });
 
-  // ── Scroll listener ──────────────────────────────────────────────
+    // Initial count
+    this.cartCount = this.cartService.getTotalCount();
+  }
+
+  ngOnDestroy(): void {
+    if (this.cartSub) {
+      this.cartSub.unsubscribe();
+    }
+  }
+
   @HostListener('window:scroll')
   onScroll(): void {
     this.isScrolled = window.scrollY > 20;
   }
 
-  // ── Desktop dropdown (hover with delay to avoid accidental close) ─
   openDropdown(): void {
     clearTimeout(this.dropdownTimer);
     this.dropdownOpen = true;
@@ -47,7 +59,6 @@ export class Header implements OnInit {
     }, 150);
   }
 
-  // ── Mobile menu ───────────────────────────────────────────────────
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
     if (!this.mobileMenuOpen) {
