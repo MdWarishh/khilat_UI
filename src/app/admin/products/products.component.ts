@@ -114,7 +114,7 @@ export class AdminProductsComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<Category[]>(`${environment.apiUrl}/categories`).subscribe({
+    this.http.get<Category[]>(`${environment.apiUrl}/categories/getAllCategories`).subscribe({
       next:  (res) => { this.categories = res; },
       error: ()    => { console.warn('Could not load categories'); }
     });
