@@ -1,121 +1,395 @@
-<div class="admin-products-page">
+<!-- admin/products/products.component.html -->
+<div class="products-page">
 
-  <div class="page-header">
-    <h1>Manage Products</h1>
-    <button class="btn-add" (click)="openAddForm()">+ Add New Product</button>
+  <!-- ── TOP BAR ── -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-input" type="text" placeholder="Search products..."
+               [(ngModel)]="searchQuery" (input)="onSearch()">
+        <button class="search-clear" *ngIf="searchQuery" (click)="clearSearch()">✕</button>
+      </div>
+
+      <select class="filter-select" [(ngModel)]="filterCategory" (change)="applyFilters()">
+        <option value="">All Categories</option>
+        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterTrending" (change)="applyFilters()">
+        <option value="">All Products</option>
+        <option value="y">Trending Only</option>
+        <option value="n">Regular Only</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+
+    <button class="btn-add" (click)="openAddForm()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Product
+    </button>
   </div>
 
-  <!-- Error Message -->
-  <div class="error-alert" *ngIf="error">{{ error }}</div>
+  <!-- ── ERROR ── -->
+  <div class="error-alert" *ngIf="error">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ error }}
+    <button (click)="error = ''">✕</button>
+  </div>
 
-  <!-- Loading -->
-  <div class="loading" *ngIf="loading">
+  <!-- ── LOADING ── -->
+  <div class="loading-wrap" *ngIf="loading">
     <div class="spinner"></div>
     <p>Loading products...</p>
   </div>
 
-  <!-- Products Table -->
-  <div class="products-table-container" *ngIf="!loading && products.length > 0">
-    <table class="products-table">
-      <thead>
-        <tr>
-          <th>Image</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Category</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let product of products">
-          <td>
-            <img [src]="product.images?.[0]?.url || '/assets/placeholder.jpg'" alt="{{product.name}}" class="product-thumb">
-          </td>
-          <td>{{ product.name }}</td>
-          <td>₹{{ product.price | number:'1.0-0' }}</td>
-          <td [class.out-of-stock]="product.stock === 0">
-            {{ product.stock }}
-          </td>
-          <td>{{ product.category?.name || 'Uncategorized' }}</td>
-          <td class="actions">
-            <button class="btn-edit" (click)="openEditForm(product)">Edit</button>
-            <button class="btn-delete" (click)="deleteProduct(product.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- ── TABLE ── -->
+  <div class="table-card" *ngIf="!loading">
 
-  <!-- No Products -->
-  <div class="no-products" *ngIf="!loading && products.length === 0">
-    <div class="empty-icon">🛍️</div>
-    <h2>No products found</h2>
-    <p>Start by adding your first product</p>
-    <button class="btn-add" (click)="openAddForm()">Add Product</button>
-  </div>
+    <!-- Results info + page size -->
+    <div class="table-meta">
+      <span class="results-info">
+        Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ filteredProducts.length }} products
+      </span>
+      <div class="page-size-wrap">
+        <span>Show</span>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+        <span>per page</span>
+      </div>
+    </div>
 
-  <!-- Add / Edit Modal -->
-  <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
-        <button class="btn-close" (click)="showForm = false">×</button>
+    <!-- Table -->
+    <div class="table-wrap" *ngIf="pagedProducts.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" (click)="sort('name')">
+              Product Name
+              <span class="sort-arrow" [class.active]="sortField === 'name'">{{ sortDir === 'asc' && sortField === 'name' ? '↑' : '↓' }}</span>
+            </th>
+            <th>Category</th>
+            <th class="sortable" (click)="sort('price')">
+              Price
+              <span class="sort-arrow" [class.active]="sortField === 'price'">{{ sortDir === 'asc' && sortField === 'price' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="sortable" (click)="sort('stock')">
+              Stock
+              <span class="sort-arrow" [class.active]="sortField === 'stock'">{{ sortDir === 'asc' && sortField === 'stock' ? '↑' : '↓' }}</span>
+            </th>
+            <th>Trending</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pagedProducts; let i = index"
+              class="table-row"
+              [style.animation-delay]="(i * 0.04) + 's'">
+
+            <td>
+              <div class="name-cell">
+                <span class="product-name">{{ p.name }}</span>
+                <span class="product-id">#{{ p.id }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="cat-chip" *ngIf="p.category">{{ p.category.name }}</span>
+              <span class="muted" *ngIf="!p.category">—</span>
+            </td>
+
+            <td class="price-cell">₹{{ p.price | number:'1.0-0' }}</td>
+
+            <td>
+              <span class="stock-chip"
+                    [class.out]="p.stock === 0"
+                    [class.low]="p.stock > 0 && p.stock <= 5">
+                {{ p.stock === 0 ? 'Out of Stock' : p.stock }}
+              </span>
+            </td>
+
+            <td>
+              <span class="trending-chip" [class.yes]="p.trending === 'y'">
+                {{ p.trending === 'y' ? '🔥 Yes' : 'No' }}
+              </span>
+            </td>
+
+            <td>
+              <span class="status-chip" [class.active]="p.isActive">
+                {{ p.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon view"   (click)="openDetails(p)"      title="View Details">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="btn-icon edit"   (click)="openEditForm(p)"     title="Edit">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-icon delete" (click)="deleteProduct(p.id)" title="Delete">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="pagedProducts.length === 0">
+      <div class="empty-icon">🔍</div>
+      <h3>No products found</h3>
+      <p>Try changing your search or filters</p>
+      <button class="btn-clear-filters" (click)="clearAllFilters()">Clear Filters</button>
+    </div>
+
+    <!-- ── PAGINATION ── -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="pg-btn" (click)="goToPage(1)"            [disabled]="currentPage === 1">«</button>
+      <button class="pg-btn" (click)="goToPage(currentPage-1)" [disabled]="currentPage === 1">‹</button>
+
+      <ng-container *ngFor="let pg of pageNumbers">
+        <button class="pg-btn page-num"
+                [class.active]="pg === currentPage"
+                [class.ellipsis]="pg === -1"
+                [disabled]="pg === -1"
+                (click)="pg !== -1 && goToPage(pg)">
+          {{ pg === -1 ? '…' : pg }}
+        </button>
+      </ng-container>
+
+      <button class="pg-btn" (click)="goToPage(currentPage+1)" [disabled]="currentPage === totalPages">›</button>
+      <button class="pg-btn" (click)="goToPage(totalPages)"    [disabled]="currentPage === totalPages">»</button>
+    </div>
+
+  </div><!-- /table-card -->
+
+
+  <!-- ══════════════════════════════════════
+       PRODUCT DETAILS MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="showDetails" (click)="showDetails = false">
+    <div class="modal-box detail-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-head">
+        <h2>Product Details</h2>
+        <button class="btn-close" (click)="showDetails = false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
 
-      <form (ngSubmit)="submitForm()" class="product-form">
+      <div class="detail-body" *ngIf="selectedProduct">
 
-        <div class="form-group">
-          <label>Product Name *</label>
-          <input type="text" [(ngModel)]="formData.name" name="name" required>
-        </div>
-
-        <div class="form-group">
-          <label>Description</label>
-          <textarea [(ngModel)]="formData.description" name="description" rows="4"></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Price (₹) *</label>
-            <input type="number" [(ngModel)]="formData.price" name="price" required min="1">
+        <!-- Images -->
+        <div class="detail-images" *ngIf="selectedProduct.productImages?.length">
+          <div class="main-img-wrap">
+            <img [src]="resolveImage(selectedProduct.productImages[activeImageIndex]?.imageUrl ?? '')"
+                 alt="{{ selectedProduct.name }}" class="main-img">
           </div>
-          <div class="form-group">
-            <label>Stock *</label>
-            <input type="number" [(ngModel)]="formData.stock" name="stock" required min="0">
-          </div>
-        </div>
-
-        <!-- Images Upload -->
-        <div class="form-group">
-          <label>Product Images</label>
-          <input type="file" multiple accept="image/*" (change)="onFileChange($event)">
-          <div class="file-preview" *ngIf="selectedFiles.length > 0">
-            <div *ngFor="let file of selectedFiles; let i = index" class="preview-item">
-              <img [src]="file | fileToUrl" alt="preview">
-              <button (click)="selectedFiles.splice(i, 1)">×</button>
+          <div class="thumb-row" *ngIf="selectedProduct.productImages.length > 1">
+            <div *ngFor="let img of selectedProduct.productImages; let i = index"
+                 class="thumb-item"
+                 [class.active]="i === activeImageIndex"
+                 (click)="activeImageIndex = i">
+              <img [src]="resolveImage(img.imageUrl)" alt="">
             </div>
           </div>
         </div>
-
-        <!-- Existing Images (Edit mode only) -->
-        <div class="existing-images" *ngIf="editingProduct?.images?.length">
-          <label>Current Images</label>
-          <div class="image-grid">
-            <div *ngFor="let img of editingProduct.images" class="image-item">
-              <img [src]="img.url" alt="product image">
-              <button class="btn-remove-img" (click)="onDeleteImage(img.id)">Remove</button>
-            </div>
-          </div>
+        <div class="no-image-box" *ngIf="!selectedProduct.productImages?.length">
+          <span>📷</span><p>No images uploaded</p>
         </div>
 
+        <!-- Info -->
+        <div class="detail-info">
+          <div class="detail-badges">
+            <span class="cat-chip" *ngIf="selectedProduct.category">{{ selectedProduct.category.name }}</span>
+            <span class="trending-chip yes" *ngIf="selectedProduct.trending === 'y'">🔥 Trending</span>
+            <span class="status-chip active" *ngIf="selectedProduct.isActive">Active</span>
+            <span class="status-chip"        *ngIf="!selectedProduct.isActive">Inactive</span>
+          </div>
+
+          <h3 class="detail-name">{{ selectedProduct.name }}</h3>
+          <p class="detail-price">₹{{ selectedProduct.price | number:'1.0-0' }}</p>
+          <p class="detail-desc">{{ selectedProduct.description || 'No description provided.' }}</p>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="di-label">Product ID</span>
+              <span class="di-val">#{{ selectedProduct.id }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="di-label">Stock</span>
+              <span class="di-val" [class.text-red]="selectedProduct.stock === 0">
+                {{ selectedProduct.stock === 0 ? 'Out of Stock' : selectedProduct.stock + ' units' }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="di-label">Category</span>
+              <span class="di-val">{{ selectedProduct.category?.name || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="di-label">Added On</span>
+              <span class="di-val">{{ selectedProduct.createdAt | date:'dd MMM yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-footer-btns">
+            <button class="btn-edit-from-detail" (click)="showDetails = false; openEditForm(selectedProduct)">
+              Edit Product
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       ADD / EDIT MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal-box form-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-head">
+        <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+        <button class="btn-close" (click)="closeForm()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitForm()" class="product-form" #pForm="ngForm" novalidate>
+        <div class="form-scroll">
+
+          <!-- Name -->
+          <div class="field-group">
+            <label>Product Name <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required
+                   placeholder="e.g. Floral Anarkali Kurti">
+          </div>
+
+          <!-- Description -->
+          <div class="field-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="formData.description" name="description"
+                      rows="3" placeholder="Short product description..."></textarea>
+          </div>
+
+          <!-- Price + Stock -->
+          <div class="form-row-2">
+            <div class="field-group">
+              <label>Price (₹) <span class="req">*</span></label>
+              <input type="number" [(ngModel)]="formData.price" name="price" required min="1"
+                     placeholder="749">
+            </div>
+            <div class="field-group">
+              <label>Stock <span class="req">*</span></label>
+              <input type="number" [(ngModel)]="formData.stock" name="stock" required min="0"
+                     placeholder="40">
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="field-group">
+            <label>Category <span class="req">*</span></label>
+            <select [(ngModel)]="formData.categoryId" name="categoryId" required
+                    [class.placeholder-sel]="!formData.categoryId">
+              <option [value]="0" disabled>— Select Category —</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <!-- Trending + Active -->
+          <div class="form-row-2">
+            <div class="field-group">
+              <label>Trending</label>
+              <select [(ngModel)]="formData.trending" name="trending">
+                <option value="n">No</option>
+                <option value="y">Yes — 🔥</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Status</label>
+              <select [(ngModel)]="formData.isActive" name="isActive">
+                <option [ngValue]="true">Active</option>
+                <option [ngValue]="false">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ── EXISTING IMAGES (edit mode) ── -->
+          <div class="field-group" *ngIf="editingProduct && editingProduct.productImages?.length">
+            <label>Current Images
+              <span class="label-hint">Click ✕ to remove · Drag to reorder (first = primary)</span>
+            </label>
+            <div class="img-grid">
+              <div *ngFor="let img of editingProduct.productImages; let i = index"
+                   class="img-thumb"
+                   [class.primary]="i === 0"
+                   [class.marked-delete]="isMarkedForDelete(img.id)">
+                <img [src]="resolveImage(img.imageUrl)" alt="">
+                <span class="primary-badge" *ngIf="i === 0">Primary</span>
+                <button type="button" class="img-remove" (click)="toggleDeleteImage(img.id)">
+                  {{ isMarkedForDelete(img.id) ? '↩' : '✕' }}
+                </button>
+                <button type="button" class="img-primary-btn"
+                        *ngIf="i !== 0 && !isMarkedForDelete(img.id)"
+                        (click)="setPrimaryImage(i)"
+                        title="Set as primary">★</button>
+              </div>
+            </div>
+            <p class="delete-hint" *ngIf="deleteImageIds.length">
+              {{ deleteImageIds.length }} image(s) will be removed on save
+            </p>
+          </div>
+
+          <!-- ── NEW IMAGES UPLOAD ── -->
+          <div class="field-group">
+            <label>{{ editingProduct ? 'Add More Images' : 'Product Images' }}</label>
+            <div class="upload-zone" (click)="fileInput.click()"
+                 (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+              <p>Click or drag images here</p>
+              <span>PNG, JPG, WEBP up to 5MB each</span>
+            </div>
+            <input #fileInput type="file" multiple accept="image/*"
+                   (change)="onFileChange($event)" style="display:none">
+
+            <!-- New file previews -->
+            <div class="img-grid" *ngIf="selectedFiles.length">
+              <div *ngFor="let file of selectedFilesPreviews; let i = index" class="img-thumb">
+                <img [src]="file" alt="">
+                <span class="primary-badge" *ngIf="!editingProduct && i === 0">Primary</span>
+                <button type="button" class="img-remove" (click)="removeSelectedFile(i)">✕</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /form-scroll -->
+
+        <!-- Form actions -->
         <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="showForm = false">Cancel</button>
-          <button type="submit" class="btn-save" [disabled]="loading">
-            {{ editingProduct ? 'Update Product' : 'Save Product' }}
+          <button type="button" class="btn-cancel" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-save" [disabled]="saving">
+            <span class="spinner-sm" *ngIf="saving"></span>
+            {{ saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product') }}
           </button>
         </div>
+
       </form>
     </div>
   </div>
+
 </div>

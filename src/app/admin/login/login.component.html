@@ -1,45 +1,121 @@
-<div class="admin-login-page">
-  <div class="login-container">
-    <div class="login-header">
-      <h1>Khilat Kurti <span>Admin</span></h1>
-      <p>Manage your store securely</p>
+<!-- admin/login/login.component.html -->
+<div class="login-page">
+
+  <!-- Left: Branding Panel -->
+  <div class="brand-panel">
+    <div class="brand-panel-inner">
+      <div class="brand-logo">
+        <span class="logo-icon">✦</span>
+        <span class="logo-text">Khilat<span class="logo-accent">Kurti's</span></span>
+      </div>
+      <div class="brand-tagline">
+        <h2>Admin Control Center</h2>
+        <p>Manage products, orders, and your entire store from one place.</p>
+      </div>
+      <div class="brand-stats">
+        <div class="stat-item">
+          <span class="stat-num">500+</span>
+          <span class="stat-label">Products</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">50K+</span>
+          <span class="stat-label">Customers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">Authentic</span>
+        </div>
+      </div>
     </div>
+    <!-- Decorative circles -->
+    <div class="deco-circle c1"></div>
+    <div class="deco-circle c2"></div>
+    <div class="deco-circle c3"></div>
+  </div>
 
-    <form (ngSubmit)="login()" class="login-form">
-      <div class="form-group">
-        <label>Email Address</label>
-        <input 
-          type="email" 
-          [(ngModel)]="email" 
-          name="email"
-          placeholder="admin@khilatkurti.com"
-          required
-          autocomplete="email"
-          [disabled]="loading">
+  <!-- Right: Login Form -->
+  <div class="form-panel">
+    <div class="form-inner">
+
+      <div class="form-header">
+        <h1>Welcome back</h1>
+        <p>Sign in to your admin account</p>
       </div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <input 
-          type="password" 
-          [(ngModel)]="password" 
-          name="password"
-          placeholder="Enter your password"
-          required
-          autocomplete="current-password"
-          [disabled]="loading">
+      <form (ngSubmit)="login()" class="login-form" #loginForm="ngForm" novalidate>
+
+        <!-- Email -->
+        <div class="field-group" [class.has-error]="emailTouched && !email">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/>
+            </svg>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="admin@khilatkurti.com"
+              autocomplete="email"
+              [disabled]="loading"
+              (blur)="emailTouched = true"
+              required>
+          </div>
+          <span class="field-error" *ngIf="emailTouched && !email">Email required</span>
+        </div>
+
+        <!-- Password -->
+        <div class="field-group" [class.has-error]="passwordTouched && !password">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              [disabled]="loading"
+              (blur)="passwordTouched = true"
+              required>
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword" tabindex="-1">
+              <svg *ngIf="!showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg *ngIf="showPassword"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="passwordTouched && !password">Password required</span>
+        </div>
+
+        <!-- API Error -->
+        <div class="api-error" *ngIf="error">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ error }}
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-signin" [disabled]="loading">
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading" class="loading-row">
+            <span class="spinner"></span> Authenticating...
+          </span>
+        </button>
+
+      </form>
+
+      <div class="form-footer">
+        <a routerLink="/" class="back-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back to Store
+        </a>
       </div>
 
-      <div class="error-message" *ngIf="error">{{ error }}</div>
-
-      <button type="submit" class="btn-login" [class.loading]="loading" [disabled]="loading">
-        <span *ngIf="!loading">Sign In to Admin Panel</span>
-        <span *ngIf="loading">Authenticating...</span>
-      </button>
-    </form>
-
-    <div class="login-footer">
-      <p>© 2025 Khilat Kurti Admin Panel • All rights reserved</p>
     </div>
   </div>
+
 </div>

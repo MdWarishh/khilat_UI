@@ -1,152 +1,431 @@
-// src/app/admin/products/products.component.ts
+// admin/products/products.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { CommonModule }      from '@angular/common';
+import { FormsModule }       from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../environments/environments';
-import { Product } from '../../models/product.model'; // assume yeh model hai (id, name, price, description, images: {id, url}[] etc.)
+import { environment }       from '../../../environments/environments';
+
+interface Category {
+  id:          number;
+  name:        string;
+  description: string;
+}
+
+interface ProductImage {
+  id:       number;
+  imageUrl: string;
+}
+
+interface Product {
+  id:            number;
+  name:          string;
+  description:   string;
+  price:         number;
+  stock:         number;
+  trending:      string;
+  isActive:      boolean;
+  createdAt:     string;
+  category?:     Category;
+  productImages: ProductImage[];
+}
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './products.component.html',
-  styleUrl: './products.component.css'
+  styleUrl:    './products.component.css'
 })
 export class AdminProductsComponent implements OnInit {
 
-  products: Product[] = [];
-  loading = true;
-  error = '';
+  // ── All Data ───────────────────────────────────
+  allProducts:      Product[]  = [];
+  filteredProducts: Product[]  = [];
+  pagedProducts:    Product[]  = [];
+  categories:       Category[] = [];
 
-  
-  showForm = false;
-  editingProduct: Product | null = null;
+  // ── State ──────────────────────────────────────
+  loading  = true;
+  saving   = false;
+  error    = '';
+
+  // ── Filters ────────────────────────────────────
+  searchQuery     = '';
+  filterCategory  = '';
+  filterTrending  = '';
+  filterStatus    = '';
+
+  // ── Sort ───────────────────────────────────────
+  sortField: 'name' | 'price' | 'stock' = 'name';
+  sortDir:   'asc'  | 'desc'            = 'asc';
+
+  // ── Pagination ─────────────────────────────────
+  currentPage = 1;
+  pageSize    = 10;
+  totalPages  = 1;
+  startIndex  = 0;
+  endIndex    = 0;
+  pageNumbers: number[] = [];
+
+  // ── Modals ─────────────────────────────────────
+  showForm    = false;
+  showDetails = false;
+
+  selectedProduct: Product | null = null;
+  editingProduct:  Product | null = null;
+  activeImageIndex = 0;
+
+  // ── Form ───────────────────────────────────────
   formData = {
-    name: '',
+    name:        '',
     description: '',
-    price: 0,
-    stock: 0,
-    categoryId: 0,
+    price:       0,
+    stock:       0,
+    categoryId:  0,
+    trending:    'n',
+    isActive:    true,
   };
-  selectedFiles: File[] = [];
-  deleteImageIds: number[] = [];
+
+  selectedFiles:        File[]    = [];
+  selectedFilesPreviews: string[] = [];
+  deleteImageIds:       number[]  = [];
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadProducts();
+    this.loadCategories();
   }
 
-  loadProducts() {
+  // ─────────────────────────────────────────────
+  // DATA LOADING
+  // ─────────────────────────────────────────────
+
+  loadProducts(): void {
     this.loading = true;
-    const token = localStorage.getItem('admin_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.authHeaders();
 
     this.http.get<Product[]>(`${environment.apiUrl}/admin/getallproducts`, { headers }).subscribe({
       next: (res) => {
-        this.products = res;
+        this.allProducts = res;
+        this.applyFilters();
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load products';
+      error: () => {
+        this.error   = 'Failed to load products. Please try again.';
         this.loading = false;
-        console.error(err);
       }
     });
   }
 
-  openAddForm() {
-    this.showForm = true;
+  loadCategories(): void {
+    this.http.get<Category[]>(`${environment.apiUrl}/categories`).subscribe({
+      next:  (res) => { this.categories = res; },
+      error: ()    => { console.warn('Could not load categories'); }
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // FILTERS + SORT + PAGINATION
+  // ─────────────────────────────────────────────
+
+  onSearch(): void {
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.applyFilters();
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery    = '';
+    this.filterCategory = '';
+    this.filterTrending = '';
+    this.filterStatus   = '';
+    this.currentPage    = 1;
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    let list = [...this.allProducts];
+
+    // Search
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.category?.name.toLowerCase().includes(q) ||
+        String(p.id).includes(q)
+      );
+    }
+
+    // Category filter
+    if (this.filterCategory) {
+      list = list.filter(p => p.category?.id === Number(this.filterCategory));
+    }
+
+    // Trending filter
+    if (this.filterTrending) {
+      list = list.filter(p => p.trending === this.filterTrending);
+    }
+
+    // Status filter
+    if (this.filterStatus) {
+      list = list.filter(p =>
+        this.filterStatus === 'active' ? p.isActive : !p.isActive
+      );
+    }
+
+    // Sort
+    list.sort((a, b) => {
+      let va: any = a[this.sortField];
+      let vb: any = b[this.sortField];
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return this.sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return this.sortDir === 'asc' ?  1 : -1;
+      return 0;
+    });
+
+    this.filteredProducts = list;
+    this.updatePagination();
+  }
+
+  sort(field: 'name' | 'price' | 'stock'): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDir   = 'asc';
+    }
+    this.applyFilters();
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePagination();
+  }
+
+  private updatePagination(): void {
+    const total    = this.filteredProducts.length;
+    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+
+    this.startIndex = (this.currentPage - 1) * this.pageSize;
+    this.endIndex   = Math.min(this.startIndex + this.pageSize, total);
+    this.pagedProducts = this.filteredProducts.slice(this.startIndex, this.endIndex);
+    this.buildPageNumbers();
+  }
+
+  private buildPageNumbers(): void {
+    const total   = this.totalPages;
+    const current = this.currentPage;
+    const pages: number[] = [];
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (current > 3)          pages.push(-1);       // ellipsis
+      for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+      if (current < total - 2)  pages.push(-1);       // ellipsis
+      pages.push(total);
+    }
+
+    this.pageNumbers = pages;
+  }
+
+  // ─────────────────────────────────────────────
+  // MODALS
+  // ─────────────────────────────────────────────
+
+  openDetails(product: Product): void {
+    this.selectedProduct  = product;
+    this.activeImageIndex = 0;
+    this.showDetails      = true;
+  }
+
+  openAddForm(): void {
     this.editingProduct = null;
-    this.formData = { name: '', description: '', price: 0, stock: 0, categoryId: 0 };
-    this.selectedFiles = [];
-    this.deleteImageIds = [];
-  }
-
-  openEditForm(product: Product) {
+    this.formData = { name: '', description: '', price: 0, stock: 0, categoryId: 0, trending: 'n', isActive: true };
+    this.selectedFiles        = [];
+    this.selectedFilesPreviews = [];
+    this.deleteImageIds       = [];
     this.showForm = true;
-    this.editingProduct = product;
+  }
+
+  openEditForm(product: Product): void {
+    this.editingProduct = { ...product, productImages: [...(product.productImages || [])] };
     this.formData = {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      categoryId: product.category?.id || 0,   // ← category object ke andar id hai
+      name:        product.name,
+      description: product.description || '',
+      price:       product.price,
+      stock:       product.stock,
+      categoryId:  product.category?.id || 0,
+      trending:    product.trending || 'n',
+      isActive:    product.isActive,
     };
-    this.selectedFiles = [];
-    this.deleteImageIds = [];
+    this.selectedFiles         = [];
+    this.selectedFilesPreviews = [];
+    this.deleteImageIds        = [];
+    this.showForm = true;
   }
 
-  onFileChange(event: any) {
-    this.selectedFiles = Array.from(event.target.files);
+  closeForm(): void {
+    this.showForm       = false;
+    this.editingProduct = null;
+    this.selectedFiles         = [];
+    this.selectedFilesPreviews = [];
+    this.deleteImageIds        = [];
   }
 
-  onDeleteImage(id: number) {
-    this.deleteImageIds.push(id);
+  // ─────────────────────────────────────────────
+  // IMAGE MANAGEMENT
+  // ─────────────────────────────────────────────
+
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    this.addFiles(Array.from(input.files));
+    input.value = '';
   }
 
-  submitForm() {
-    const token = localStorage.getItem('admin_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+    this.addFiles(files);
+  }
+
+  private addFiles(files: File[]): void {
+    files.forEach(file => {
+      this.selectedFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = (e) => this.selectedFilesPreviews.push(e.target?.result as string);
+      reader.readAsDataURL(file);
     });
+  }
 
-    const formDataPayload = new FormData();
-    formDataPayload.append('product', new Blob([JSON.stringify(this.formData)], { type: 'application/json' }));
+  removeSelectedFile(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    this.selectedFilesPreviews.splice(index, 1);
+  }
 
-    this.selectedFiles.forEach(file => {
-      formDataPayload.append('images', file);
-    });
+  toggleDeleteImage(id: number): void {
+    const idx = this.deleteImageIds.indexOf(id);
+    if (idx >= 0) this.deleteImageIds.splice(idx, 1);
+    else          this.deleteImageIds.push(id);
+  }
+
+  isMarkedForDelete(id: number): boolean {
+    return this.deleteImageIds.includes(id);
+  }
+
+  setPrimaryImage(index: number): void {
+    if (!this.editingProduct) return;
+    const imgs = this.editingProduct.productImages;
+    const [moved] = imgs.splice(index, 1);
+    imgs.unshift(moved);
+  }
+
+  // ─────────────────────────────────────────────
+  // SUBMIT (ADD / EDIT)
+  // ─────────────────────────────────────────────
+
+  submitForm(): void {
+    if (!this.formData.name.trim() || !this.formData.price || !this.formData.categoryId) {
+      this.error = 'Please fill all required fields (Name, Price, Category)';
+      return;
+    }
+
+    this.saving = true;
+    this.error  = '';
+    const headers = this.authHeaders();
+
+    const payload = new FormData();
+    payload.append('product', new Blob([JSON.stringify({
+      name:        this.formData.name.trim(),
+      description: this.formData.description.trim(),
+      price:       this.formData.price,
+      stock:       this.formData.stock,
+      categoryId:  this.formData.categoryId,
+      trending:    this.formData.trending,
+      isActive:    this.formData.isActive,
+    })], { type: 'application/json' }));
+
+    this.selectedFiles.forEach(file => payload.append('images', file));
 
     if (this.editingProduct) {
-      formDataPayload.append('deleteImageIds', this.deleteImageIds.join(','));
-      const url = `${environment.apiUrl}/admin/updateproduct/${this.editingProduct.id}`;
+      // Reorder info — send primary image id first
+      const primaryId = this.editingProduct.productImages
+        .filter(img => !this.deleteImageIds.includes(img.id))[0]?.id;
+      if (primaryId) payload.append('primaryImageId', String(primaryId));
+      if (this.deleteImageIds.length) payload.append('deleteImageIds', this.deleteImageIds.join(','));
 
-      this.http.post<Product>(url, formDataPayload, { headers }).subscribe({
-        next: (res) => {
-          this.loadProducts();
-          this.showForm = false;
-        },
-        error: (err) => {
-          this.error = 'Failed to update product';
-          console.error(err);
-        }
+      this.http.post<Product>(
+        `${environment.apiUrl}/admin/updateproduct/${this.editingProduct.id}`,
+        payload, { headers }
+      ).subscribe({
+        next:  () => { this.onSaveSuccess(); },
+        error: (err) => { this.onSaveError(err); }
       });
     } else {
-      const url = `${environment.apiUrl}/admin/addproducts`;
-
-      this.http.post<Product>(url, formDataPayload, { headers }).subscribe({
-        next: (res) => {
-          this.loadProducts();
-          this.showForm = false;
-        },
-        error: (err) => {
-          this.error = 'Failed to add product';
-          console.error(err);
-        }
+      this.http.post<Product>(
+        `${environment.apiUrl}/admin/addproducts`,
+        payload, { headers }
+      ).subscribe({
+        next:  () => { this.onSaveSuccess(); },
+        error: (err) => { this.onSaveError(err); }
       });
     }
   }
 
-  deleteProduct(id: number) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+  private onSaveSuccess(): void {
+    this.saving = false;
+    this.closeForm();
+    this.loadProducts();
+  }
 
-    const token = localStorage.getItem('admin_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+  private onSaveError(err: any): void {
+    this.saving = false;
+    this.error  = err.error?.message || (this.editingProduct ? 'Failed to update product' : 'Failed to add product');
+  }
 
-    this.http.delete<string>(`${environment.apiUrl}/admin/deleteproduct/${id}`, { headers }).subscribe({
-      next: () => {
-        this.loadProducts();
-      },
-      error: (err) => {
-        this.error = 'Failed to delete product';
-        console.error(err);
-      }
+  // ─────────────────────────────────────────────
+  // DELETE
+  // ─────────────────────────────────────────────
+
+  deleteProduct(id: number): void {
+    if (!confirm('Delete this product? This action cannot be undone.')) return;
+
+    this.http.delete<string>(
+      `${environment.apiUrl}/admin/deleteproduct/${id}`,
+      { headers: this.authHeaders() }
+    ).subscribe({
+      next:  () => { this.loadProducts(); },
+      error: () => { this.error = 'Failed to delete product.'; }
     });
+  }
+
+  // ─────────────────────────────────────────────
+  // HELPERS
+  // ─────────────────────────────────────────────
+
+  resolveImage(imageUrl: string | undefined | null): string {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+    return `${environment.imageBaseUrl}${imageUrl}`;
+  }
+
+  private authHeaders(): HttpHeaders {
+    return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` });
   }
 }

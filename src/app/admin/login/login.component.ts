@@ -1,56 +1,62 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environments';  // ← yeh import karna zaroori
+// admin/login/login.component.ts
+import { Component }     from '@angular/core';
+import { CommonModule }  from '@angular/common';
+import { FormsModule }   from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { HttpClient }    from '@angular/common/http';
+import { environment }   from '../../../environments/environments';
 
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl:    './login.component.css'
 })
 export class AdminLoginComponent {
 
-  email = '';
+  email    = '';
   password = '';
-  error = '';
-  loading = false;
+  error    = '';
+  loading  = false;
+
+  // UI state
+  showPassword    = false;
+  emailTouched    = false;
+  passwordTouched = false;
 
   constructor(
-    private http: HttpClient,
+    private http:   HttpClient,
     private router: Router
   ) {}
 
-  login() {
+  login(): void {
+    // Touch both fields to show validation
+    this.emailTouched    = true;
+    this.passwordTouched = true;
+
     if (!this.email.trim() || !this.password.trim()) {
-      this.error = 'Email aur password dono bharna zaroori hai';
+      this.error = 'Please fill in all fields';
       return;
     }
 
     this.loading = true;
-    this.error = '';
+    this.error   = '';
 
-    const payload = { 
-      email: this.email.trim(), 
-      password: this.password.trim() 
-    };
-
-    // ← environment se URL le rahe hain
-    this.http.post<any>(`${environment.apiUrl}/admin/login`, payload).subscribe({
+    this.http.post<{ token: string; email?: string }>(
+      `${environment.apiUrl}/admin/login`,
+      { email: this.email.trim(), password: this.password.trim() }
+    ).subscribe({
       next: (res) => {
         localStorage.setItem('admin_token', res.token);
-        localStorage.setItem('admin_email', res.email || this.email); // optional
+        if (res.email) localStorage.setItem('admin_email', res.email);
         this.loading = false;
         this.router.navigate(['/admin/dashboard']);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Login failed – galat email ya password';
-        console.error('Login error:', err);
+        this.error   = err.error?.message || 'Invalid email or password. Please try again.';
       }
     });
   }
-}   
+}

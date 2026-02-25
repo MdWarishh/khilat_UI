@@ -1,9 +1,17 @@
 // src/app/app.routes.ts
-import { Routes } from '@angular/router';
+import { Routes }              from '@angular/router';
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 
+// ── Auth Guard ─────────────────────────────────────────────────────
+const adminGuard = () => {
+  if (localStorage.getItem('admin_token')) return true;
+  window.location.href = '/admin/login';
+  return false;
+};
+
 export const routes: Routes = [
-  // ──────────────── Public / User Routes (ye sab user layout ke andar) ────────────────
+
+  // ──────────────── User / Public Routes ────────────────
   {
     path: '',
     loadComponent: () => import('./components/home/home').then(m => m.Home),
@@ -20,6 +28,10 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () => import('./components/contact/contact').then(m => m.Contact),
   },
+  // {
+  //   path: 'products',
+  //   loadComponent: () => import('./components/products/products').then(m => m.Products),
+  // },
   {
     path: 'products/:id',
     loadComponent: () => import('./components/product-detail/product-detail').then(m => m.ProductDetail),
@@ -34,48 +46,40 @@ export const routes: Routes = [
   },
 
   // ──────────────── Admin Routes ────────────────
+  // Login page — NO admin layout (no navbar/footer)
   {
     path: 'admin/login',
-    loadComponent: () => import('./admin/login/login.component')
-      .then(m => m.AdminLoginComponent),
+    loadComponent: () => import('./admin/login/login.component').then(m => m.AdminLoginComponent),
   },
 
+  // Admin panel — AdminLayoutComponent wraps all child pages
+  // Header/Footer component app.html mein *ngIf se admin routes pe hide karte hain
   {
     path: 'admin',
-    component: AdminLayoutComponent,  // ← sidebar + navbar yahan se aayega
-    canActivate: [() => {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        // Token nahi to login pe redirect
-        window.location.href = '/admin/login';
-        return false;
-      }
-      return true;
-    }],
+    component: AdminLayoutComponent,
+    canActivate: [adminGuard],
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./admin/dashboard/dashboard.component')
-          .then(m => m.DashboardComponent),
+        loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'products',
-        loadComponent: () => import('./admin/products/products.component')
-          .then(m => m.AdminProductsComponent),
+        loadComponent: () => import('./admin/products/products.component').then(m => m.AdminProductsComponent),
       },
-      // Baad mein yahan aur routes add kar (orders, settings etc.)
+       { path: 'orders',    loadComponent: () => import('./admin/orders/orders.component').then(m => m.AdminOrdersComponent) },
       {
         path: '',
         redirectTo: 'dashboard',
-        pathMatch: 'full'
-      }
-    ]
+        pathMatch: 'full',
+      },
+    ],
   },
 
-  // Wildcard
+  // ──────────────── Wildcard ────────────────
   {
     path: '**',
     redirectTo: '',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];

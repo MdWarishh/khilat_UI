@@ -1,18 +1,21 @@
-<div class="d-flex flex-column min-vh-100">
+<!-- src/app/app.html -->
 
-  <app-header></app-header>
+<!-- User Header — admin routes pe nahi dikhega -->
+<app-header *ngIf="!isAdminRoute"></app-header>
 
-  <main class="flex-grow-1">
-    <router-outlet></router-outlet>
-  </main>
+<!-- Page Content — admin routes pe main tag nahi chahiye -->
+<main *ngIf="!isAdminRoute">
+  <router-outlet *ngIf="!isAdminRoute"></router-outlet>
+</main>
 
-  <app-footer></app-footer>
+<!-- Admin routes ka router-outlet alag — koi wrapper nahi -->
+<router-outlet *ngIf="isAdminRoute"></router-outlet>
 
-</div>
+<!-- User Footer — admin routes pe nahi dikhega -->
+<app-footer *ngIf="!isAdminRoute"></app-footer>
 
-
-<!-- Floating Cart FAB -->
-<div class="fab-cart" routerLink="/cart" *ngIf="cartCount > 0">
+<!-- Floating Cart FAB — sirf user routes pe -->
+<div class="fab-cart" routerLink="/cart" *ngIf="cartCount > 0 && !isAdminRoute">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
     <line x1="3" y1="6" x2="21" y2="6"/>
