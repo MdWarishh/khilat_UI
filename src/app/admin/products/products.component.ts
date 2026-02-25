@@ -16,6 +16,15 @@ interface ProductImage {
   imageUrl: string;
 }
 
+export interface ProductPageResponse {
+  content: Product[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  last: boolean;
+}
+
 interface Product {
   id:            number;
   name:          string;
@@ -27,6 +36,11 @@ interface Product {
   createdAt:     string;
   category?:     Category;
   productImages: ProductImage[];
+  content: Product[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 @Component({
@@ -37,6 +51,8 @@ interface Product {
   styleUrl:    './products.component.css'
 })
 export class AdminProductsComponent implements OnInit {
+
+  totalElements: number = 0;
 
   // ── All Data ───────────────────────────────────
   allProducts:      Product[]  = [];
@@ -97,33 +113,45 @@ export class AdminProductsComponent implements OnInit {
     this.loadCategories();
   }
 
-  // ─────────────────────────────────────────────
-  // DATA LOADING
-  // ─────────────────────────────────────────────
-
-  loadProducts(): void {
-    this.loading = true;
-    const headers = this.authHeaders();
-
-    this.http.get<Product[]>(`${environment.apiUrl}/admin/getallproducts`, { headers }).subscribe({
-      next: (res) => {
-        this.allProducts = res;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.error   = 'Failed to load products. Please try again.';
-        this.loading = false;
-      }
-    });
-  }
-
   loadCategories(): void {
     this.http.get<Category[]>(`${environment.apiUrl}/categories`).subscribe({
       next:  (res) => { this.categories = res; },
       error: ()    => { console.warn('Could not load categories'); }
     });
   }
+
+  // ─────────────────────────────────────────────
+  // DATA LOADING
+  // ─────────────────────────────────────────────
+
+  
+  // 3. Update loadProducts to calculate endIndex correctly for the HTML
+loadProducts(): void {
+  this.loading = true;
+  const headers = this.authHeaders();
+  const params = `?page=${this.currentPage - 1}&size=${this.pageSize}`;
+
+  this.http.get<ProductPageResponse>(`${environment.apiUrl}/admin/getallproducts${params}`, { headers })
+    .subscribe({
+      next: (res) => {
+        this.pagedProducts = res.content; 
+        this.totalElements = res.totalElements; // Make sure this property exists in your class
+        this.totalPages = res.totalPages;
+        
+        // Manual calculation for the "Showing X-Y of Z" text
+        this.startIndex = (this.currentPage - 1) * this.pageSize;
+        this.endIndex = this.startIndex + this.pagedProducts.length;
+        
+        this.loading = false;
+        this.buildPageNumbers();
+      },
+      error: () => {
+        this.error = 'Failed to load products.';
+        this.loading = false;
+      }
+    });
+}
+  
 
   // ─────────────────────────────────────────────
   // FILTERS + SORT + PAGINATION
@@ -205,16 +233,14 @@ export class AdminProductsComponent implements OnInit {
   }
 
   onPageSizeChange(): void {
-    this.currentPage = 1;
-    this.updatePagination();
+    this.currentPage = 1; // Reset to page 1
+    this.loadProducts();  // Call the API with the new size
   }
-
   goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
     this.currentPage = page;
-    this.updatePagination();
+    this.loadProducts(); // This is the fix! It must call the API
   }
-
   private updatePagination(): void {
     const total    = this.filteredProducts.length;
     this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));

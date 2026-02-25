@@ -142,23 +142,21 @@ decrementProductQty(productId: number): void {
 addToCart(product: Product): void {
   const qty = this.getProductQty(product.id);
 
-  // Already cart mein hai to kuch mat badal (ya message dikha sakte hain baad mein)
   if (this.isInCart(product.id)) {
     return;
   }
 
-  // Multiple items add karne ke liye loop
   for (let i = 0; i < qty; i++) {
     this.cartService.addItem({
       productId: product.id,
       name:      product.name,
       price:     product.price,
-      image:     product.image || '',
+      // Fix: Use product.image[0] because product.image is now an array
+      image:     (product.image && product.image.length > 0) ? product.image[0] : '',
       category:  product.category?.name || '',
     });
   }
 
-  // Pending qty clear kar do (ab cartService handle karega)
   delete this.pendingQuantities[product.id];
 }
 
@@ -169,14 +167,18 @@ addToCart(product: Product): void {
   private loadTrending(): void {
     this.productService.getTrendingProducts().subscribe({
       next: (products: Product[]) => {
-        this.trendingProducts = products.map(p => ({ ...p, image: this.resolveImage(p) }));
+        // Fix: Wrap the resolved image in an array [ ]
+        this.trendingProducts = products.map(p => ({ 
+          ...p, 
+          image: [this.resolveImage(p)] 
+        }));
+        
         this.loadingTrending = false;
 
-        // Use first trending product images as hero slides if available
         if (products.length >= 3) {
           this.heroSlides = products.slice(0, 3).map((p, i) => ({
-            image: this.resolveImage(p),
-            tag:   i === 0 ? 'Trending Now'   : i === 1 ? 'Bestseller' : 'Popular Pick',
+            image: this.resolveImage(p), // Hero slide uses a single string, this is fine
+            tag:   i === 0 ? 'Trending Now' : i === 1 ? 'Bestseller' : 'Popular Pick',
             title: p.name,
           }));
         }
@@ -188,7 +190,11 @@ addToCart(product: Product): void {
   private loadRecent(): void {
     this.productService.getRecentProducts().subscribe({
       next: (products: Product[]) => {
-        this.recentProducts = products.map(p => ({ ...p, image: this.resolveImage(p) }));
+        // Fix: Wrap the resolved image in an array [ ]
+        this.recentProducts = products.map(p => ({ 
+          ...p, 
+          image: [this.resolveImage(p)] 
+        }));
         this.loadingRecent = false;
       },
       error: () => { this.loadingRecent = false; }

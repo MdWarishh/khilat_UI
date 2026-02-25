@@ -24,18 +24,11 @@ export interface Product {
   category: Category;
   productImages: ProductImage[];
   // Frontend computed property
-  image?: string; // Will be set from productImages[0]
-}
+  image?: string[]; // Will be set from productImages[0]
 
-
-
-/** Shape of the reactive form used in add / edit. */
-export interface ProductFormData {
-  name:        string;
-  description: string;
-  price:       number;
-  stock:       number;
-  categoryId:  number;
-  trending:    string;
-  isActive:    boolean;
+  content: Product[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
