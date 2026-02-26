@@ -17,7 +17,7 @@ export class CategoryService {
 
   // ✅ FIXED: API call enable ki
   getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${environment.apiUrl}/categories`).pipe(
+    return this.http.get<Category[]>(`${environment.apiUrl}/categories/getAllCategories`).pipe(
       catchError(() => of([]))
     );
   }
