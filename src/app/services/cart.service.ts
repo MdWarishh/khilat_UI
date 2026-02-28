@@ -34,7 +34,7 @@ export interface CartItem {
 export class CartService {
 
   private readonly BASE_URL = 'http://localhost:8080/api/cart';
-  private readonly GUEST_KEY = 'khilat_guest_id';
+  private readonly GUEST_KEY = 'guest_id';
 
   private cartSubject = new BehaviorSubject<CartItem[]>([]);
   cart$ = this.cartSubject.asObservable();
