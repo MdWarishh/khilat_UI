@@ -1,7 +1,7 @@
 // cart.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink }   from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CartService, CartItem } from '../../services/cart.service';
 
@@ -14,18 +14,26 @@ import { CartService, CartItem } from '../../services/cart.service';
 })
 export class Cart implements OnInit, OnDestroy {
 
-  cartItems:  CartItem[] = [];
-  totalCount: number     = 0;
-  totalPrice: number     = 0;
+  cartItems: CartItem[] = [];
+  totalCount: number = 0;
+  totalPrice: number = 0;
+  isLoading: boolean = true;
   private sub!: Subscription;
 
   constructor(private cartService: CartService) {}
 
   ngOnInit(): void {
+    // Subscribe to cart state
     this.sub = this.cartService.cart$.subscribe(items => {
-      this.cartItems  = items;
+      this.cartItems = items;
       this.totalCount = this.cartService.getTotalCount();
       this.totalPrice = this.cartService.getTotalPrice();
+    });
+
+    // Fetch cart from backend on page load
+    this.cartService.fetchCart().subscribe({
+      next: () => this.isLoading = false,
+      error: () => this.isLoading = false
     });
   }
 
@@ -33,6 +41,13 @@ export class Cart implements OnInit, OnDestroy {
 
   increment(productId: number): void { this.cartService.increment(productId); }
   decrement(productId: number): void { this.cartService.decrement(productId); }
-  remove(productId: number):    void { this.cartService.remove(productId); }
-  clearCart():                  void { this.cartService.clearCart(); }
+  remove(productId: number): void { this.cartService.remove(productId); }
+  clearCart(): void { this.cartService.clearCart(); }
+
+  getImageUrl(item: CartItem): string {
+    if (item.product.productImages && item.product.productImages.length > 0) {
+      return item.product.productImages[0];
+    }
+    return 'assets/placeholder.png';
+  }
 }

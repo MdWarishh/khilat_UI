@@ -1,0 +1,46 @@
+<!-- product-card.component.html -->
+<div class="product-card"
+  [class.visible]="visible"
+  [style.animation-delay]="animDelay"
+  (click)="productClick.emit(product.id)">
+
+  <div class="product-img-wrap">
+    <span class="product-badge" [ngClass]="badgeClass">{{ badgeLabel }}</span>
+    <img [src]="product.image?.[0] || product.image" [alt]="product.name" class="product-img"
+      onerror="this.onerror=null;this.style.display='none';this.parentElement.style.background='#FFE3E1';" />
+    <div class="product-overlay">
+      <button class="overlay-btn" (click)="$event.stopPropagation(); productClick.emit(product.id)">
+        View Details
+      </button>
+    </div>
+  </div>
+
+  <div class="product-info">
+    <span class="product-category" *ngIf="product.category">{{ product.category.name }}</span>
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="product-desc" *ngIf="product.description">
+      {{ product.description.length > 55 ? (product.description | slice:0:55) + '…' : product.description }}
+    </p>
+    <div class="product-footer">
+      <span class="product-price">₹{{ product.price }}</span>
+      <span class="stock-tag in-stock"  *ngIf="product.stock > 0">In Stock</span>
+      <span class="stock-tag out-stock" *ngIf="product.stock === 0">Sold Out</span>
+    </div>
+
+    <div class="cart-controls" (click)="$event.stopPropagation()">
+      <div class="qty-selector">
+        <button class="qty-btn minus"
+          (click)="decrement.emit(product.id)"
+          [disabled]="qty <= 1 && !inCart">−</button>
+        <span class="qty-display">{{ qty }}</span>
+        <button class="qty-btn plus" (click)="increment.emit(product.id)">+</button>
+      </div>
+      <button class="add-cart-main"
+        [class.in-cart]="inCart"
+        [disabled]="product.stock <= 0 || inCart"
+        (click)="addToCart.emit(product)">
+        {{ inCart ? '✓ In Cart' : '🛍️ Add to Cart' }}
+      </button>
+    </div>
+  </div>
+</div>

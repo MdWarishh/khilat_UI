@@ -1,0 +1,41 @@
+/* offer-strip.component.css */
+:root {
+  --cream:       #FFF5E4;
+  --blush:       #FFE3E1;
+  --rose:        #FFD1D1;
+  --pink:        #FF9494;
+  --pink-dark:   #e87575;
+  --dark:        #1C1C1C;
+  --mid:         #5A4A4A;
+  --light-mid:   #9A8A8A;
+  --white:       #FFFFFF;
+  --section-gap: 100px;
+  --radius-lg:   24px;
+  --radius-md:   16px;
+  --radius-sm:   10px;
+}
+.offer-strip { background: var(--dark); padding: 13px 0; overflow: hidden; }
+
+.offer-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.offer-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2rem;
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  white-space: nowrap;
+}
+.offer-dot { color: var(--pink); font-size: 0.65rem; }

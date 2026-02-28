@@ -1,96 +1,97 @@
 // home.component.ts
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule }   from '@angular/common';
-import { RouterLink }     from '@angular/router';
-import { Router }         from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
-import { Product }        from '../../models/product.model';
-import { environment }    from '../../../environments/environments';
 import { GuestService } from '../../services/guest.service';
 import { CartService } from '../../services/cart.service';
-import { Subscription } from 'rxjs';
+import { Product } from '../../models/product.model';
+import { environment } from '../../../environments/environments';
+
+import { HeroComponent }        from './hero/hero.component';
+import { OfferStripComponent }  from './offer-strip/offer-strip.component';
+import { CategoriesComponent }  from './categories/categories.component';
+import { TrendingComponent }    from './trending/trending.component';
+import { OfferBannerComponent } from './offer-banner/offer-banner.component';
+import { NewArrivalsComponent } from './new-arrivals/new-arrivals.component';
+import { WhyUsComponent }       from './why-us/why-us.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    CommonModule,
+    HeroComponent,
+    OfferStripComponent,
+    CategoriesComponent,
+    TrendingComponent,
+    OfferBannerComponent,
+    NewArrivalsComponent,
+    WhyUsComponent,
+  ],
   templateUrl: './home.html',
-  styleUrl: './home.css'
+  styleUrl: './home.css',
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── Section refs for scroll-reveal ─────────────────────────────
-  @ViewChild('categoriesSection') categoriesSection!: ElementRef;
-  @ViewChild('trendingSection')   trendingSection!:   ElementRef;
-  @ViewChild('newArrivalsSection') newArrivalsSection!: ElementRef;
-  @ViewChild('whySection')        whySection!:         ElementRef;
+  // ── ViewChild refs for scroll reveal ──────────────────────────
+  @ViewChild('categoriesSection')  private categoriesSection!:  ElementRef;
+  @ViewChild('trendingSection')    private trendingSection!:    ElementRef;
+  @ViewChild('newArrivalsSection') private newArrivalsSection!: ElementRef;
+  @ViewChild('whySection')         private whySection!:         ElementRef;
 
-  // ── Data ────────────────────────────────────────────────────────
+  // ── Data ──────────────────────────────────────────────────────
   trendingProducts: Product[] = [];
   recentProducts:   Product[] = [];
   categories:       any[]     = [];
-  pendingQuantities: { [productId: number]: number } = {};
-    // temporary qty before adding to cart
 
-  // ── Loading flags ───────────────────────────────────────────────
+  // ── Cart state ────────────────────────────────────────────────
+  pendingQuantities: { [id: number]: number }  = {};
+  cartedProducts:    { [id: number]: boolean } = {};
+
+  // ── Loading ───────────────────────────────────────────────────
   loadingTrending   = true;
   loadingRecent     = true;
   loadingCategories = true;
 
-  // ── Visibility flags (scroll-reveal) ────────────────────────────
+  // ── Scroll reveal ─────────────────────────────────────────────
   heroVisible        = false;
   catsVisible        = false;
   trendingVisible    = false;
   newArrivalsVisible = false;
   whyVisible         = false;
 
-  // ── Hero slideshow ───────────────────────────────────────────────
+  // ── Hero slider ───────────────────────────────────────────────
   heroSlide  = 0;
-  heroSlides: { image: string; tag: string; title: string }[] = [
-    { image: 'assets/images/hero-1.png', tag: 'New Season', title: 'Summer Collection 2025' },
-    { image: 'assets/images/hero-2.png', tag: 'Bestseller',  title: 'Premium Embroidery' },
-    { image: 'assets/images/hero-3.png', tag: 'Sale',        title: 'Up to 40% Off' },
-  ];
+  heroSlides: { image: string; tag: string; title: string }[] = [];
+
   private slideInterval: any;
-
-  // ── Marquee offer items ──────────────────────────────────────────
-  offerItems = [
-    'Free Shipping above ₹999',
-    'Easy 7-day Returns',
-    'Authentic Handcrafted Designs',
-    'New Arrivals Every Week',
-    'COD Available',
-    'Secure Payments',
-  ];
-
-  // ── Why Choose Us ─────────────────────────────────────────────
-  features = [
-    { icon: '🧵', title: 'Authentic Craftsmanship',  desc: 'Every kurti is handcrafted by skilled artisans using traditional techniques.' },
-    { icon: '🚚', title: 'Free Delivery',             desc: 'Enjoy free shipping on all orders above ₹999. Pan India delivery.' },
-    { icon: '↩️', title: 'Easy Returns',              desc: 'Hassle-free 7-day return policy. No questions asked.' },
-    { icon: '🔒', title: 'Secure Payments',           desc: '100% secure checkout with all major payment options supported.' },
-  ];
-
-  // ── IntersectionObserver ─────────────────────────────────────────
   private observer!: IntersectionObserver;
 
-private cartSub!: Subscription;
+  constructor(
+    private productService:  ProductService,
+    private categoryService: CategoryService,
+    private cartService:     CartService,
+    private guestService:    GuestService,
+    private http:            HttpClient,
+    private router:          Router,
+  ) {}
 
-constructor(
-  private productService:  ProductService,
-  private categoryService: CategoryService,
-  private cartService:     CartService,
-  private router: Router
-) {}
+  // ── Lifecycle ─────────────────────────────────────────────────
 
   ngOnInit(): void {
+    // ✅ FIXED: item.product.id instead of item.productId (new CartItem structure)
+    this.cartService.getItems().forEach(item => {
+      this.cartedProducts[item.product.id] = true;
+    });
+
+    this.loadCategories();
     this.loadTrending();
     this.loadRecent();
-    this.loadCategories();
-    this.startHeroSlider();
 
-    // Trigger hero animation after a tick
     setTimeout(() => (this.heroVisible = true), 100);
   }
 
@@ -98,200 +99,133 @@ constructor(
     this.setupScrollReveal();
   }
 
- ngOnDestroy(): void {
-  clearInterval(this.slideInterval);
-  if (this.observer) this.observer.disconnect();
-  if (this.cartSub)  this.cartSub.unsubscribe();
-}
-
-
-// ── Cart & Quantity Logic ─────────────────────────────────────────────
-
-getProductQty(productId: number): number {
-  if (this.isInCart(productId)) {
-    return this.cartService.getItemQty(productId);
+  ngOnDestroy(): void {
+    clearInterval(this.slideInterval);
+    this.observer?.disconnect();
   }
-  // Nahi to user ne jo pending select kiya hai (default 1)
-  return this.pendingQuantities[productId] ?? 1;
-}
 
-isInCart(productId: number): boolean {
-  return this.cartService.isInCart(productId);
-}
+  // ── Cart ──────────────────────────────────────────────────────
 
-incrementProductQty(productId: number): void {
-  if (this.isInCart(productId)) {
-    this.cartService.increment(productId);
-  } else {
-    const current = this.pendingQuantities[productId] ?? 1;
-    this.pendingQuantities[productId] = current + 1;
-  }
-}
-
-decrementProductQty(productId: number): void {
-  if (this.isInCart(productId)) {
-    this.cartService.decrement(productId);
-  } else {
-    const current = this.pendingQuantities[productId] ?? 1;
-    if (current > 1) {
-      this.pendingQuantities[productId] = current - 1;
+  incrementQty(id: number): void {
+    if (this.cartedProducts[id]) {
+      this.cartService.increment(id);
+    } else {
+      this.pendingQuantities = { ...this.pendingQuantities, [id]: (this.pendingQuantities[id] ?? 1) + 1 };
     }
   }
-}
 
-addToCart(product: Product): void {
-  const qty = this.getProductQty(product.id);
-
-  if (this.isInCart(product.id)) {
-    return;
+  decrementQty(id: number): void {
+    if (this.cartedProducts[id]) {
+      this.cartService.decrement(id);
+    } else {
+      const cur = this.pendingQuantities[id] ?? 1;
+      if (cur > 1) this.pendingQuantities = { ...this.pendingQuantities, [id]: cur - 1 };
+    }
   }
 
-  for (let i = 0; i < qty; i++) {
-    this.cartService.addItem({
-      productId: product.id,
-      name:      product.name,
-      price:     product.price,
-      // Fix: Use product.image[0] because product.image is now an array
-      image:     (product.image && product.image.length > 0) ? product.image[0] : '',
-      category:  product.category?.name || '',
-    });
-  }
+  addToCart(product: Product): void {
+    if (this.cartedProducts[product.id] || product.stock <= 0) return;
 
-  delete this.pendingQuantities[product.id];
-}
+    const qty = this.pendingQuantities[product.id] ?? 1;
 
-  // ─────────────────────────────────────────────
-  // DATA LOADING
-  // ─────────────────────────────────────────────
-
-  private loadTrending(): void {
-    this.productService.getTrendingProducts().subscribe({
-      next: (products: Product[]) => {
-        // Fix: Wrap the resolved image in an array [ ]
-        this.trendingProducts = products.map(p => ({ 
-          ...p, 
-          image: [this.resolveImage(p)] 
-        }));
-        
-        this.loadingTrending = false;
-
-        if (products.length >= 3) {
-          this.heroSlides = products.slice(0, 3).map((p, i) => ({
-            image: this.resolveImage(p), // Hero slide uses a single string, this is fine
-            tag:   i === 0 ? 'Trending Now' : i === 1 ? 'Bestseller' : 'Popular Pick',
-            title: p.name,
-          }));
-        }
+    // ✅ FIXED: cartService.addItem now takes (productId, quantity) — no object
+    this.cartService.addItem(product.id, qty).subscribe({
+      next: () => {
+        // Remove from pending, mark as carted
+        const { [product.id]: _, ...rest } = this.pendingQuantities;
+        this.pendingQuantities = rest;
+        this.cartedProducts    = { ...this.cartedProducts, [product.id]: true };
       },
-      error: () => { this.loadingTrending = false; }
+      error: (err) => console.error('Add to cart failed:', err),
     });
   }
 
-  private loadRecent(): void {
-    this.productService.getRecentProducts().subscribe({
-      next: (products: Product[]) => {
-        // Fix: Wrap the resolved image in an array [ ]
-        this.recentProducts = products.map(p => ({ 
-          ...p, 
-          image: [this.resolveImage(p)] 
-        }));
-        this.loadingRecent = false;
-      },
-      error: () => { this.loadingRecent = false; }
-    });
-  }
-
-private loadCategories(): void {
-  this.categoryService.getCategories().subscribe({
-    next: (cats: any[]) => {
-      this.categories = cats;
-      this.loadingCategories = false;  // ✅ ye hai
-    },
-    error: () => { this.loadingCategories = false; }  // ✅ ye bhi hai
-  });
-}
-
-  // ─────────────────────────────────────────────
-  // IMAGE RESOLUTION
-  // ─────────────────────────────────────────────
-
- private resolveImage(product: Product): string {
-  if (!product.productImages || product.productImages.length === 0) {
-    return ''; // Empty string, CSS handle karega
-  }
-  const url = product.productImages[0].imageUrl;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  return `${environment.imageBaseUrl}${url}`;
-} 
-
-  // ─────────────────────────────────────────────
-  // ROUTING
-  // ─────────────────────────────────────────────
+  // ── Routing ───────────────────────────────────────────────────
 
   goToProduct(id: number | string): void {
     this.router.navigate(['/products', id]);
   }
 
-  // ─────────────────────────────────────────────
-  // HERO SLIDER
-  // ─────────────────────────────────────────────
-
-  private startHeroSlider(): void {
-    this.slideInterval = setInterval(() => {
-      this.heroSlide = (this.heroSlide + 1) % this.heroSlides.length;
-    }, 4000);
-  }
+  // ── Hero slider ───────────────────────────────────────────────
 
   setHeroSlide(index: number): void {
     this.heroSlide = index;
-    // Reset timer on manual click
     clearInterval(this.slideInterval);
-    this.startHeroSlider();
+    this.startSlider();
   }
 
-  // ─────────────────────────────────────────────
-  // SCROLL REVEAL
-  // ─────────────────────────────────────────────
+  private startSlider(): void {
+    clearInterval(this.slideInterval);
+    this.slideInterval = setInterval(
+      () => (this.heroSlide = (this.heroSlide + 1) % this.heroSlides.length),
+      4000,
+    );
+  }
+
+  // ── Data loading ──────────────────────────────────────────────
+
+  private loadTrending(): void {
+    this.productService.getTrendingProducts().subscribe({
+      next: (products) => {
+        this.trendingProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)] }));
+        this.loadingTrending  = false;
+
+        if (products.length) {
+          this.heroSlides = products.slice(0, 3).map((p, i) => ({
+            image: this.resolveImage(p),
+            tag:   ['Trending Now', 'Bestseller', 'Popular Pick'][i] ?? 'Trending',
+            title: p.name,
+          }));
+          this.startSlider();
+        }
+      },
+      error: () => (this.loadingTrending = false),
+    });
+  }
+
+  private loadRecent(): void {
+    this.productService.getRecentProducts().subscribe({
+      next: (products) => {
+        this.recentProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)] }));
+        this.loadingRecent  = false;
+      },
+      error: () => (this.loadingRecent = false),
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next:  (cats) => { this.categories = cats; this.loadingCategories = false; },
+      error: ()     => (this.loadingCategories = false),
+    });
+  }
+
+  // ── Scroll reveal ─────────────────────────────────────────────
 
   private setupScrollReveal(): void {
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          const el = entry.target;
-          if (el === this.categoriesSection?.nativeElement)  this.catsVisible = true;
-          if (el === this.trendingSection?.nativeElement)    this.trendingVisible = true;
-          if (el === this.newArrivalsSection?.nativeElement) this.newArrivalsVisible = true;
-          if (el === this.whySection?.nativeElement)         this.whyVisible = true;
-          this.observer.unobserve(el); // Fire only once
-        });
-      },
-      { threshold: 0.15 }
-    );
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        if (el === this.categoriesSection?.nativeElement)  this.catsVisible        = true;
+        if (el === this.trendingSection?.nativeElement)    this.trendingVisible    = true;
+        if (el === this.newArrivalsSection?.nativeElement) this.newArrivalsVisible = true;
+        if (el === this.whySection?.nativeElement)         this.whyVisible         = true;
+        this.observer.unobserve(el);
+      });
+    }, { threshold: 0.15 });
 
-    const sections = [
-      this.categoriesSection,
-      this.trendingSection,
-      this.newArrivalsSection,
-      this.whySection,
-    ];
-    sections.forEach(s => { if (s?.nativeElement) this.observer.observe(s.nativeElement); });
+    [this.categoriesSection, this.trendingSection, this.newArrivalsSection, this.whySection]
+      .forEach(s => s?.nativeElement && this.observer.observe(s.nativeElement));
   }
 
-  // ─────────────────────────────────────────────
-  // UTILS
-  // ─────────────────────────────────────────────
+  // ── Util ──────────────────────────────────────────────────────
 
-  getCatEmoji(name: string): string {
-    const map: Record<string, string> = {
-      kurta: '👗', kurti: '👗', anarkali: '🌸', palazzo: '✨',
-      ethnic: '🪷',  casual: '🌿', festive: '🎉', cotton: '🌾',
-      silk: '💎',   embroidery: '🧵', designer: '👑', sale: '🏷️',
-    };
-    const key = name.toLowerCase();
-    for (const k of Object.keys(map)) {
-      if (key.includes(k)) return map[k];
-    }
-    return '🛍️';
+  private resolveImage(product: Product): string {
+    if (!product.productImages?.length) return '';
+    const url  = product.productImages[0].imageUrl;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const base = environment.imageBaseUrl.replace(/\/$/, '');
+    return base + (url.startsWith('/') ? url : '/' + url);
   }
 }

@@ -19,16 +19,20 @@ export interface Product {
   originalPrice?: number;
   stock: number;
   isActive: boolean;
-  trending: string; // 'y' or 'n'
+  trending: string;   // 'y' or 'n'
   createdAt: string;
   category: Category;
   productImages: ProductImage[];
-  // Frontend computed property
-  image?: string[]; // Will be set from productImages[0]
 
-  content: Product[];
+  // Frontend computed — resolveImage() se set hota hai
+  image?: string[];
+}
+
+// Pagination response ke liye alag interface — Product se alag rakho
+export interface ProductPage {
+  content:       Product[];
   totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+  totalPages:    number;
+  size:          number;
+  number:        number;
 }

@@ -1,0 +1,190 @@
+/* categories.component.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Section layout ── */
+.section-wrapper {
+  padding: 100px 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #e87575;
+  margin-bottom: 1rem;
+}
+.section-eyebrow::before,
+.section-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: #e87575;
+  opacity: 0.5;
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 600;
+  color: #1C1C1C;
+  line-height: 1.15;
+}
+.section-title em { font-style: italic; color: #e87575; }
+
+/* ── Grid ── */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Card ── */
+.cat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px 24px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(255,148,148,0.12);
+  border-radius: 20px;
+  text-decoration: none;
+  color: #1C1C1C;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+}
+
+.cat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FFD1D1, #FF9494);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-card.visible { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+.cat-card:hover {
+  background: #FFFAF6;
+  border-color: rgba(255,148,148,0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 14px 40px rgba(255,100,100,0.12);
+}
+.cat-card:hover::after { opacity: 1; }
+
+/* ── Icon wrap ── */
+.cat-icon-wrap {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FFE3E1, #FFD1D1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255,148,148,0.15);
+}
+.cat-card:hover .cat-icon-wrap {
+  transform: scale(1.08) rotate(-5deg);
+  box-shadow: 0 8px 20px rgba(255,100,100,0.2);
+}
+
+/* SVG icon */
+.cat-icon-wrap svg {
+  width: 24px; height: 24px;
+  stroke: #e87575;
+  stroke-width: 1.75;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s ease;
+}
+.cat-card:hover .cat-icon-wrap svg { stroke: #c0392b; }
+
+/* ── Text ── */
+.cat-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  color: #1C1C1C;
+  line-height: 1.3;
+}
+
+.cat-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(255,148,148,0.1);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.cat-arrow svg {
+  width: 12px; height: 12px;
+  stroke: #e87575;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cat-card:hover .cat-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Skeleton ── */
+.skeleton-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+.skeleton-cat {
+  height: 140px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #f5e9e9 25%, #fce0e0 50%, #f5e9e9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ── Coming soon ── */
+.coming-soon-card {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #9A8A8A;
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) { .categories-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .categories-grid { grid-template-columns: repeat(2, 1fr); } }

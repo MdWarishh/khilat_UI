@@ -1,0 +1,11 @@
+<!-- offer-strip.component.html -->
+<div class="offer-strip">
+  <div class="offer-track">
+    <span *ngFor="let item of offerItems" class="offer-item">
+      <span class="offer-dot">✦</span> {{ item }}
+    </span>
+    <span *ngFor="let item of offerItems" class="offer-item" aria-hidden="true">
+      <span class="offer-dot">✦</span> {{ item }}
+    </span>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<!-- categories.component.html -->
+<section class="section-wrapper">
+  <div class="section-head">
+    <p class="section-eyebrow">Shop by Style</p>
+    <h2 class="section-title">Explore <em>Categories</em></h2>
+  </div>
+
+  <!-- Skeleton -->
+  <div *ngIf="loading" class="skeleton-row">
+    <div class="skeleton-cat" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Grid -->
+  <div class="categories-grid" *ngIf="!loading">
+    <a *ngFor="let cat of categories; let i = index"
+      class="cat-card"
+      [class.visible]="visible"
+      [style.animation-delay]="i * 0.08 + 's'"
+      routerLink="/categories"
+      [queryParams]="{ id: cat.id }">
+
+      <div class="cat-icon-wrap">
+        <svg viewBox="0 0 24 24" [innerHTML]="getCatSvg(cat.name)"></svg>
+      </div>
+
+      <span class="cat-name">{{ cat.name }}</span>
+
+      <div class="cat-arrow">
+        <svg viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </a>
+
+    <div *ngIf="categories.length === 0" class="coming-soon-card">
+      <span>Categories coming soon</span>
+    </div>
+  </div>
+</section>

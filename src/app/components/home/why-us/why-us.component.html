@@ -1,0 +1,27 @@
+<!-- why-us.component.html -->
+<section class="why-section">
+  <div class="why-inner">
+
+    <div class="section-head">
+      <p class="section-eyebrow">Our Promise</p>
+      <h2 class="section-title">Why Choose <em>Us?</em></h2>
+    </div>
+
+    <div class="why-grid">
+      <div *ngFor="let feat of features; let i = index"
+        class="why-card"
+        [class.visible]="visible"
+        [style.animation-delay]="i * 0.12 + 's'">
+
+        <div class="why-icon-wrap">
+          <!-- SVG icon rendered from feature object -->
+          <svg viewBox="0 0 24 24" [innerHTML]="feat.svg"></svg>
+        </div>
+
+        <h3 class="why-title">{{ feat.title }}</h3>
+        <p class="why-desc">{{ feat.desc }}</p>
+      </div>
+    </div>
+
+  </div>
+</section>

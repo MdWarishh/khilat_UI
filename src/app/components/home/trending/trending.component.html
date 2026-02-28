@@ -1,0 +1,48 @@
+<!-- trending.component.html -->
+<section class="section-wrapper section-alt">
+  <div class="section-head">
+    <p class="section-eyebrow">What's Hot</p>
+    <h2 class="section-title">Trending <em>Picks</em></h2>
+    <p class="section-sub">Discover what everyone's loving this season</p>
+  </div>
+
+  <div *ngIf="loading" class="products-grid">
+    <div class="product-skeleton" *ngFor="let i of [1,2,3,4]">
+      <div class="skel-img"></div>
+      <div class="skel-line w-70"></div>
+      <div class="skel-line w-40"></div>
+      <div class="skel-line w-50"></div>
+    </div>
+  </div>
+
+  <div class="products-grid" *ngIf="!loading && products.length">
+    <app-product-card
+      *ngFor="let p of products | slice:0:4; let i = index"
+      [product]="p"
+      [visible]="visible"
+      [animDelay]="i * 0.12 + 's'"
+      badgeLabel="🔥 Trending"
+      badgeClass="badge-trending"
+      [qty]="getQty(p.id)"
+      [inCart]="isInCart(p.id)"
+      (productClick)="productClick.emit($event)"
+      (increment)="increment.emit($event)"
+      (decrement)="decrement.emit($event)"
+      (addToCart)="addToCart.emit($event)"
+    ></app-product-card>
+  </div>
+
+  <div *ngIf="!loading && !products.length" class="empty-state">
+    <span class="empty-icon">🛍️</span>
+    <p>Trending products coming soon!</p>
+  </div>
+
+  <div class="section-cta" *ngIf="!loading && products.length">
+    <a routerLink="/products" class="view-all-btn">
+      View All Products
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7" />
+      </svg>
+    </a>
+  </div>
+</section>
