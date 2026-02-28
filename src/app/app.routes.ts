@@ -44,6 +44,11 @@ export const routes: Routes = [
     path: 'checkout',
     loadComponent: () => import('./components/checkout/checkout').then(m => m.Checkout),
   },
+  {
+    path: 'order-success',
+    loadComponent: () => import('./components/order-success/order-success.component').then(m => m.OrderSuccessComponent),
+  },
+  
 
   // ──────────────── Admin Routes ────────────────
   // Login page — NO admin layout (no navbar/footer)

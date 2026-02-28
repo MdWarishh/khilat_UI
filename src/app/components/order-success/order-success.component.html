@@ -1,0 +1,101 @@
+<!-- src/app/components/order-success/order-success.html -->
+<div class="success-page">
+
+  <!-- ── LOADING STATE ── -->
+  <div class="verifying" *ngIf="verifying">
+    <div class="verify-card">
+      <div class="spin-ring"></div>
+      <h3>Verifying your payment...</h3>
+      <p>Please wait, do not close this page.</p>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS STATE ── -->
+  <div class="success-wrap" *ngIf="!verifying && paymentStatus === 'succeeded'">
+
+    <!-- Confetti dots (CSS only) -->
+    <div class="confetti" aria-hidden="true">
+      <span *ngFor="let i of confettiDots"></span>
+    </div>
+
+    <div class="success-card">
+
+      <!-- Checkmark animation -->
+      <div class="check-circle">
+        <svg class="check-svg" viewBox="0 0 52 52" fill="none">
+          <circle class="check-circle-bg" cx="26" cy="26" r="25" stroke="#16a34a" stroke-width="2" fill="none"/>
+          <path class="check-tick" d="M14 27l8 8 16-16" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+
+      <h1>Order Confirmed! 🎉</h1>
+      <p class="sub">Thank you for shopping with <strong>Khilat Kurti's</strong></p>
+
+      <!-- Order ID -->
+      <div class="order-id-box" *ngIf="orderId">
+        <span class="oid-label">Order ID</span>
+        <span class="oid-val">{{ orderId }}</span>
+      </div>
+
+      <!-- Payment ID -->
+      <div class="order-id-box pi-box" *ngIf="paymentIntentId">
+        <span class="oid-label">Payment Reference</span>
+        <span class="oid-val pi-val">{{ paymentIntentId }}</span>
+      </div>
+
+      <!-- What's next -->
+      <div class="next-steps">
+        <div class="ns-item">
+          <span class="ns-icon">📧</span>
+          <div>
+            <strong>Confirmation Email</strong>
+            <p>Order details sent to your email</p>
+          </div>
+        </div>
+        <div class="ns-item">
+          <span class="ns-icon">📦</span>
+          <div>
+            <strong>Processing</strong>
+            <p>Your order is being prepared</p>
+          </div>
+        </div>
+        <div class="ns-item">
+          <span class="ns-icon">🚚</span>
+          <div>
+            <strong>Delivery</strong>
+            <p>Expected within 5–7 business days</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-btns">
+        <a routerLink="/" class="btn-home">Continue Shopping</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── FAILED STATE ── -->
+  <div class="failed-wrap" *ngIf="!verifying && paymentStatus === 'failed'">
+    <div class="failed-card">
+      <div class="fail-icon">❌</div>
+      <h1>Payment Failed</h1>
+      <p>{{ errorMessage || 'Your payment could not be processed. Please try again.' }}</p>
+      <div class="action-btns">
+        <button class="btn-retry" (click)="retryCheckout()">Try Again</button>
+        <a routerLink="/" class="btn-home-outline">Back to Store</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROCESSING STATE (webhook pending) ── -->
+  <div class="processing-wrap" *ngIf="!verifying && paymentStatus === 'processing'">
+    <div class="processing-card">
+      <div class="spin-ring orange"></div>
+      <h1>Payment Processing</h1>
+      <p>Your payment is being processed. We'll notify you once confirmed.</p>
+      <a routerLink="/" class="btn-home">Back to Store</a>
+    </div>
+  </div>
+
+</div>

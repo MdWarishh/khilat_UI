@@ -76,9 +76,6 @@ export class Checkout implements OnInit, AfterViewInit, OnDestroy {
       this.calculateTotals();
     });
 
-    // Fetch fresh cart from backend
-    this.cartService.fetchCart().subscribe();
-
     if (this.cartService.getTotalCount() === 0) {
       this.router.navigate(['/products']);
     }
@@ -145,7 +142,16 @@ export class Checkout implements OnInit, AfterViewInit, OnDestroy {
     this.stripeLoading = true;
     this.errorMessage  = '';
 
-    const { error } = await this.stripe.confirmPayment({
+    // Step 1: Submit elements form validation
+    const { error: submitError } = await this.elements.submit();
+    if (submitError) {
+      this.stripeLoading = false;
+      this.errorMessage = submitError.message || 'Please check your payment details.';
+      return;
+    }
+
+    // Step 2: Confirm payment
+    const { error, paymentIntent } = await this.stripe.confirmPayment({
       elements: this.elements,
       confirmParams: {
         return_url: `${window.location.origin}/order-success`,
@@ -165,14 +171,27 @@ export class Checkout implements OnInit, AfterViewInit, OnDestroy {
           },
         },
       },
+      // redirect: if_required — only redirects for redirect-based payment methods (UPI, netbanking)
+      // For cards it returns here directly with paymentIntent or error
+      redirect: 'if_required',
     });
 
-    // If error (user cancelled, card declined etc.)
     if (error) {
+      // Card declined, cancelled, validation error
       this.stripeLoading = false;
-      this.errorMessage  = error.message || 'Payment failed. Please try again.';
+      this.errorMessage = error.message || 'Payment failed. Please try again.';
+      return;
     }
-    // On success, Stripe redirects to return_url automatically
+
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // Payment succeeded — navigate to success page
+      this.router.navigate(['/order-success'], {
+        queryParams: { payment_intent: paymentIntent.id, status: 'succeeded' }
+      });
+    } else {
+      this.stripeLoading = false;
+      this.errorMessage = 'Payment could not be completed. Please try again.';
+    }
   }
 
   goBackToForm(): void {
@@ -240,11 +259,11 @@ export class Checkout implements OnInit, AfterViewInit, OnDestroy {
   // ── Cart display helpers ──────────────────────────────────────
 
   getProductName(item: CartItem): string {
-    return item.product?.name ?? '';
+    return item.product.name;
   }
 
   getProductQty(item: CartItem): number {
-    return item.quantity ?? 0;
+    return item.quantity;
   }
 
   getItemTotal(item: CartItem): number {
