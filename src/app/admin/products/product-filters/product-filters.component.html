@@ -1,0 +1,47 @@
+<!-- admin/products/product-filters/product-filters.component.html -->
+<div class="top-bar">
+  <div class="top-bar-left">
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input class="search-input" type="text" placeholder="Search products..."
+             [(ngModel)]="filters.searchQuery"
+             (input)="handleSearch()">
+      <button class="search-clear" *ngIf="filters.searchQuery" (click)="handleClearSearch()">✕</button>
+    </div>
+
+    <!-- Category Filter -->
+    <select class="filter-select" [(ngModel)]="filters.filterCategory" (change)="handleFilterChange()">
+      <option value="">All Categories</option>
+      <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+    </select>
+
+    <!-- Trending Filter -->
+    <select class="filter-select" [(ngModel)]="filters.filterTrending" (change)="handleFilterChange()">
+      <option value="">All Products</option>
+      <option value="y">Trending Only</option>
+      <option value="n">Regular Only</option>
+    </select>
+
+    <!-- Status Filter -->
+    <select class="filter-select" [(ngModel)]="filters.filterStatus" (change)="handleFilterChange()">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+  </div>
+
+  <!-- Add Button -->
+  <button class="btn-add" (click)="onAddProduct.emit()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Product
+  </button>
+</div>

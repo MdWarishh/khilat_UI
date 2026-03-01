@@ -35,4 +35,23 @@ export interface ProductPage {
   totalPages:    number;
   size:          number;
   number:        number;
+  last:          boolean;
+}
+
+
+export interface ProductFilters {
+  searchQuery:    string;
+  filterCategory: string;
+  filterTrending: string;
+  filterStatus:   string;
+}
+
+export interface ProductFormData {
+  name:        string;
+  description: string;
+  price:       number;
+  stock:       number;
+  categoryId:  number;
+  trending:    string;
+  isActive:    boolean;
 }

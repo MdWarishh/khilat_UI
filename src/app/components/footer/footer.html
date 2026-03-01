@@ -1,48 +1,139 @@
-<footer class="bg-dark text-white py-5 mt-auto">
-  <div class="container">
-    <div class="row">
+<!-- footer/footer.html -->
+<footer class="footer">
 
-      <!-- Brand & description -->
-      <div class="col-lg-4 mb-4 mb-lg-0">
-        <h5 class="fw-bold mb-3">ShopNow</h5>
-        <p class="text-muted small">
-          Modern, clean & fast online shopping experience.<br>
-          Something awesome is coming soon 🚀
+  <!-- Top ornament divider -->
+  <div class="footer-ornament">
+    <div class="orn-line"></div>
+    <svg class="orn-star" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+    </svg>
+    <div class="orn-line"></div>
+  </div>
+
+  <div class="footer-body">
+
+    <!-- ══ MAIN GRID ══ -->
+    <div class="footer-grid">
+
+      <!-- Brand Column -->
+      <div class="col-brand">
+        <div class="brand-logo">
+          <span class="brand-serif">Khilat</span>
+          <span class="brand-serif italic">Kurti's</span>
+        </div>
+        <p class="brand-desc">
+          Woven with tradition,<br>crafted for the modern woman.
         </p>
-      </div>
-
-      <!-- Quick links -->
-      <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-        <h6 class="text-uppercase mb-3">Navigation</h6>
-        <ul class="list-unstyled small">
-          <li class="mb-2"><a routerLink="/" class="text-white text-decoration-none">Home</a></li>
-          <li class="mb-2"><a routerLink="/about" class="text-white text-decoration-none">About</a></li>
-          <li class="mb-2"><a routerLink="/categories" class="text-white text-decoration-none">Categories</a></li>
-          <li><a routerLink="/contact" class="text-white text-decoration-none">Contact</a></li>
-        </ul>
-      </div>
-
-      <!-- Contact / Social -->
-      <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
-        <h6 class="text-uppercase mb-3">Get in touch</h6>
-        <ul class="list-unstyled small">
-          <li class="mb-2">support@shopnow.example</li>
-          <li class="mb-2">+91 99999 99999</li>
-        </ul>
-        <div class="mt-3">
-          <a href="#" class="text-white me-3"><i class="bi bi-instagram fs-5"></i></a>
-          <a href="#" class="text-white me-3"><i class="bi bi-facebook fs-5"></i></a>
-          <a href="#" class="text-white"><i class="bi bi-twitter-x fs-5"></i></a>
+        <div class="social-row">
+          <a href="#" class="soc-btn" aria-label="Instagram">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="Facebook">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="WhatsApp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="Pinterest">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.236 2.636 7.855 6.356 9.312C8.22 20.514 8.143 19.3 8.345 18.437c.181-.78 1.172-4.97 1.172-4.97s-.299-.598-.299-1.482c0-1.388.806-2.428 1.808-2.428.853 0 1.267.641 1.267 1.408 0 .858-.546 2.14-.828 3.33-.236.995.499 1.806 1.476 1.806 1.771 0 3.135-1.867 3.135-4.56 0-2.385-1.715-4.052-4.163-4.052-2.836 0-4.498 2.127-4.498 4.325 0 .856.33 1.775.741 2.276a.3.3 0 01.069.286c-.075.314-.243.995-.277 1.134-.044.183-.145.222-.335.134-1.249-.581-2.03-2.407-2.03-3.874 0-3.154 2.292-6.052 6.608-6.052 3.469 0 6.165 2.473 6.165 5.776 0 3.447-2.173 6.22-5.19 6.22-1.013 0-1.967-.527-2.292-1.148l-.623 2.378c-.226.869-.835 1.958-1.244 2.621A10 10 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+          </a>
         </div>
       </div>
 
-      <!-- Copyright -->
-      <div class="col-12 text-center mt-4 pt-4 border-top border-secondary">
-        <small class="text-muted">
-          © {{ currentYear }} ShopNow. All rights reserved.
-        </small>
+      <!-- Explore Links -->
+      <div class="col-links">
+        <h6 class="col-title">Explore</h6>
+        <ul>
+          <li><a routerLink="/">Home</a></li>
+          <li><a routerLink="/categories">Collections</a></li>
+          <li><a routerLink="/products">All Products</a></li>
+          <li><a routerLink="/about">Our Story</a></li>
+          <li><a routerLink="/contact">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <!-- Shop Links -->
+      <div class="col-links">
+        <h6 class="col-title">Shop</h6>
+        <ul>
+          <li><a routerLink="/categories">Anarkali</a></li>
+          <li><a routerLink="/categories">Straight Kurta</a></li>
+          <li><a routerLink="/categories">A-Line</a></li>
+          <li><a routerLink="/categories">Palazzo Sets</a></li>
+          <li><a routerLink="/categories">Co-ord Sets</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact + Newsletter -->
+      <div class="col-contact">
+        <h6 class="col-title">Contact</h6>
+        <ul class="contact-list">
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>support&#64;khilatkurtis.com</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <span>+91 99999 99999</span>
+          </li>
+          <li>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Lucknow, Uttar Pradesh</span>
+          </li>
+        </ul>
+
+        <div class="newsletter">
+          <p class="nl-label">Get exclusive offers ✦</p>
+          <div class="nl-row">
+            <input type="email" class="nl-input" placeholder="your@email.com">
+            <button class="nl-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
     </div>
+
+    <!-- ══ TRUST BADGES ══ -->
+    <div class="trust-strip">
+      <div class="trust-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>100% Authentic</span>
+      </div>
+      <div class="trust-dot">✦</div>
+      <div class="trust-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        <span>Free Shipping ₹999+</span>
+      </div>
+      <div class="trust-dot">✦</div>
+      <div class="trust-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        <span>Easy Returns</span>
+      </div>
+      <div class="trust-dot">✦</div>
+      <div class="trust-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <span>Secure Payments</span>
+      </div>
+      <div class="trust-dot">✦</div>
+      <div class="trust-item">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        <span>Handpicked Quality</span>
+      </div>
+    </div>
+
+    <!-- ══ BOTTOM BAR ══ -->
+    <div class="footer-bottom">
+      <span class="copy">© {{ currentYear }} Khilat Kurti's. All rights reserved.</span>
+      <div class="bottom-links">
+        <a href="#">Privacy Policy</a>
+        <span class="b-dot">·</span>
+        <a href="#">Terms of Use</a>
+        <span class="b-dot">·</span>
+        <a href="#">Shipping Policy</a>
+      </div>
+    </div>
+
   </div>
 </footer>

@@ -1,0 +1,145 @@
+<!-- admin/products/product-form-modal/product-form-modal.component.html -->
+<div class="modal-overlay" *ngIf="show" (click)="onClose.emit()">
+  <div class="modal-box form-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-head">
+      <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+      <button class="btn-close" (click)="onClose.emit()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-alert" *ngIf="error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+
+    <form (ngSubmit)="submitForm()" class="product-form" novalidate>
+      <div class="form-scroll">
+
+        <!-- Name -->
+        <div class="field-group">
+          <label>Product Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="formData.name" name="name" required
+                 placeholder="e.g. Floral Anarkali Kurti">
+        </div>
+
+        <!-- Description -->
+        <div class="field-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description"
+                    rows="3" placeholder="Short product description..."></textarea>
+        </div>
+
+        <!-- Price + Stock -->
+        <div class="form-row-2">
+          <div class="field-group">
+            <label>Price (₹) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.price" name="price" required min="1" placeholder="749">
+          </div>
+          <div class="field-group">
+            <label>Stock <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.stock" name="stock" required min="0" placeholder="40">
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div class="field-group">
+          <label>Category <span class="req">*</span></label>
+          <select [(ngModel)]="formData.categoryId" name="categoryId" required
+                  [class.placeholder-sel]="!formData.categoryId">
+            <option [ngValue]="0" disabled>— Select Category —</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <!-- Trending + Status -->
+        <div class="form-row-2">
+          <div class="field-group">
+            <label>Trending</label>
+            <select [(ngModel)]="formData.trending" name="trending">
+              <option value="n">No</option>
+              <option value="y">Yes — 🔥</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Status</label>
+            <select [(ngModel)]="formData.isActive" name="isActive">
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Existing Images (Edit mode only) -->
+        <div class="field-group" *ngIf="editingProduct && localImages.length">
+          <label>
+            Current Images
+            <span class="label-hint">Click ✕ to remove · First image = Primary</span>
+          </label>
+          <div class="img-grid">
+            <div *ngFor="let img of localImages; let i = index"
+                 class="img-thumb"
+                 [class.primary]="i === 0"
+                 [class.marked-delete]="isMarkedForDelete(img.id)">
+              <img [src]="resolveImage(img.imageUrl)" alt="">
+              <span class="primary-badge" *ngIf="i === 0">Primary</span>
+              <button type="button" class="img-remove" (click)="toggleDeleteImage(img.id)">
+                {{ isMarkedForDelete(img.id) ? '↩' : '✕' }}
+              </button>
+              <button type="button" class="img-primary-btn"
+                      *ngIf="i !== 0 && !isMarkedForDelete(img.id)"
+                      (click)="setPrimaryImage(i)"
+                      title="Set as primary">★</button>
+            </div>
+          </div>
+          <p class="delete-hint" *ngIf="deleteImageIds.length">
+            {{ deleteImageIds.length }} image(s) will be removed on save
+          </p>
+        </div>
+
+        <!-- New Images Upload -->
+        <div class="field-group">
+          <label>{{ editingProduct ? 'Add More Images' : 'Product Images' }}</label>
+          <div class="upload-zone" (click)="fileInput.click()"
+               (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+            <p>Click or drag images here</p>
+            <span>PNG, JPG, WEBP up to 5MB each</span>
+          </div>
+          <input #fileInput type="file" multiple accept="image/*"
+                 (change)="onFileChange($event)" style="display:none">
+
+          <!-- New file previews -->
+          <div class="img-grid" *ngIf="selectedFiles.length">
+            <div *ngFor="let file of selectedFilesPreviews; let i = index" class="img-thumb">
+              <img [src]="file" alt="">
+              <span class="primary-badge" *ngIf="!editingProduct && i === 0">Primary</span>
+              <button type="button" class="img-remove" (click)="removeSelectedFile(i)">✕</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-scroll -->
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="onClose.emit()">Cancel</button>
+        <button type="submit" class="btn-save" [disabled]="saving">
+          <span class="spinner-sm" *ngIf="saving"></span>
+          {{ saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

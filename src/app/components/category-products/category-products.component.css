@@ -1,0 +1,360 @@
+/* category-products.component.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Page wrapper ── */
+.page-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 60px 2rem 100px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Header ── */
+.page-header {
+  margin-bottom: 3rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid rgba(232, 117, 117, 0.25);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #e87575;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.back-btn:hover {
+  background: rgba(232, 117, 117, 0.06);
+  border-color: rgba(232, 117, 117, 0.5);
+  transform: translateX(-3px);
+}
+.back-btn svg {
+  width: 15px; height: 15px;
+  stroke: #e87575;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #e87575;
+  margin-bottom: 0.5rem;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  color: #1C1C1C;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+}
+
+.product-count {
+  font-size: 0.85rem;
+  color: #9A8A8A;
+  margin: 0;
+}
+
+/* ── Grid ── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Product Card ── */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1.5px solid rgba(255, 148, 148, 0.12);
+  border-radius: 20px;
+  text-decoration: none;
+  color: #1C1C1C;
+  overflow: hidden;
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.32s ease,
+              border-color 0.32s ease;
+  animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(255, 100, 100, 0.12);
+  border-color: rgba(255, 148, 148, 0.3);
+}
+
+/* ── Card Image ── */
+.card-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #fdf5f5;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.product-card:hover .card-img {
+  transform: scale(1.05);
+}
+
+.card-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 28, 28, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.product-card:hover .card-img-overlay {
+  opacity: 1;
+}
+
+.view-btn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.7);
+  border-radius: 50px;
+  padding: 8px 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* ── Badges ── */
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 50px;
+  padding: 4px 12px;
+}
+.badge.trending    { background: #fff8f8; color: #e87575; border: 1px solid rgba(232,117,117,0.3); }
+.badge.low-stock   { background: #fff3e0; color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+.badge.out-of-stock{ background: #f5f5f5; color: #9A8A8A; border: 1px solid rgba(154,138,138,0.3); }
+
+/* ── Card Body ── */
+.card-body {
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-category {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #e87575;
+  margin: 0 0 6px;
+}
+
+.card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1C1C1C;
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.card-desc {
+  font-size: 0.78rem;
+  color: #9A8A8A;
+  margin: 0 0 auto;
+  line-height: 1.5;
+  padding-bottom: 12px;
+
+  /* clamp to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,148,148,0.1);
+}
+
+.card-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1C1C1C;
+}
+
+.card-arrow {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255,148,148,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.card-arrow svg {
+  width: 14px; height: 14px;
+  stroke: #e87575;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.product-card:hover .card-arrow {
+  background: rgba(255,148,148,0.2);
+  transform: translateX(3px);
+}
+
+/* ── Skeleton ── */
+.skeleton-card {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,148,148,0.08);
+}
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(90deg, #f5e9e9 25%, #fce0e0 50%, #f5e9e9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.skeleton-body { padding: 16px 18px; }
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #f5e9e9 25%, #fce0e0 50%, #f5e9e9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.skeleton-line.wide  { width: 80%; }
+.skeleton-line.short { width: 50%; }
+.skeleton-line.price { width: 35%; margin-top: 16px; height: 16px; }
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ── Error / Empty ── */
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: #9A8A8A;
+}
+.error-state svg,
+.empty-state svg {
+  width: 48px; height: 48px;
+  stroke: #e87575;
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+.error-state p,
+.empty-state p { font-size: 1rem; margin-bottom: 1.5rem; }
+
+.retry-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #e87575, #c0392b);
+  border: none;
+  border-radius: 50px;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.retry-btn:hover { opacity: 0.88; transform: translateY(-2px); }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 3rem;
+}
+
+.page-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,148,148,0.2);
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1C1C1C;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.page-btn:hover:not(:disabled) {
+  background: rgba(255,148,148,0.08);
+  border-color: rgba(232,117,117,0.4);
+  transform: scale(1.08);
+}
+.page-btn.active {
+  background: linear-gradient(135deg, #e87575, #c0392b);
+  border-color: transparent;
+  color: #fff;
+}
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn.nav svg {
+  width: 16px; height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .page-wrapper  { padding: 40px 1rem 60px; }
+}
+@media (max-width: 400px) {
+  .products-grid { grid-template-columns: 1fr; }
+}

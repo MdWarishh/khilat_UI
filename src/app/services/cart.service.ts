@@ -126,5 +126,5 @@ export class CartService {
 
   getItemQty(productId: number): number {
     return this.cartSubject.value.find(i => i.product.id === productId)?.quantity || 0;
-  }
+  } 
 }

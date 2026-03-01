@@ -1,5 +1,5 @@
 <!-- categories.component.html -->
-<section class="section-wrapper">
+<section class="section-wrapper" id="categories">
   <div class="section-head">
     <p class="section-eyebrow">Shop by Style</p>
     <h2 class="section-title">Explore <em>Categories</em></h2>
@@ -16,8 +16,8 @@
       class="cat-card"
       [class.visible]="visible"
       [style.animation-delay]="i * 0.08 + 's'"
-      routerLink="/categories"
-      [queryParams]="{ id: cat.id }">
+      routerLink="/category-products"
+      [queryParams]="{ id: cat.id, name: cat.name }">
 
       <div class="cat-icon-wrap">
         <svg viewBox="0 0 24 24" [innerHTML]="getCatSvg(cat.name)"></svg>

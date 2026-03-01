@@ -10,3 +10,12 @@ body {
   font-family: 'DM Sans', sans-serif;
   background: #F8F4EF;
 }
+
+/* cart.component.css */
+/* @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500&display=swap'); */
+
+:root {
+  --cream: #FFF5E4; --blush: #FFE3E1; --rose: #FFD1D1;
+  --pink: #FF9494; --pink-dark: #e87575;
+  --dark: #1C1C1C; --mid: #5A4A4A; --light-mid: #9A8A8A;
+}

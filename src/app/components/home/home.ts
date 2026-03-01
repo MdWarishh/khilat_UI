@@ -167,12 +167,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private loadTrending(): void {
     this.productService.getTrendingProducts().subscribe({
       next: (products) => {
-        this.trendingProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)] }));
+        this.trendingProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)].filter((x): x is string => x !== null) }));
         this.loadingTrending  = false;
 
-        if (products.length) {
-          this.heroSlides = products.slice(0, 3).map((p, i) => ({
-            image: this.resolveImage(p),
+        const withImages = products.filter(p => this.resolveImage(p));
+        if (withImages.length) {
+          this.heroSlides = withImages.slice(0, 3).map((p, i) => ({
+            image: this.resolveImage(p)!,
             tag:   ['Trending Now', 'Bestseller', 'Popular Pick'][i] ?? 'Trending',
             title: p.name,
           }));
@@ -186,7 +187,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   private loadRecent(): void {
     this.productService.getRecentProducts().subscribe({
       next: (products) => {
-        this.recentProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)] }));
+        this.recentProducts = products.map(p => ({ ...p, image: [this.resolveImage(p)].filter((x): x is string => x !== null) }));
         this.loadingRecent  = false;
       },
       error: () => (this.loadingRecent = false),
@@ -221,9 +222,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Util ──────────────────────────────────────────────────────
 
-  private resolveImage(product: Product): string {
-    if (!product.productImages?.length) return '';
-    const url  = product.productImages[0].imageUrl;
+  private resolveImage(product: Product): string | null {
+    if (!product.productImages?.length) return null;
+    const url = product.productImages[0].imageUrl;
+    if (!url || !url.trim()) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
     const base = environment.imageBaseUrl.replace(/\/$/, '');
     return base + (url.startsWith('/') ? url : '/' + url);

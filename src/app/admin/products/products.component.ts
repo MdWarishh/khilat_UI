@@ -1,116 +1,114 @@
 // admin/products/products.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule }      from '@angular/common';
-import { FormsModule }       from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment }       from '../../../environments/environments';
 
-interface Category {
-  id:          number;
-  name:        string;
-  description: string;
-}
+import {
+  Product, Category, ProductPage,
+  ProductFilters, ProductFormData
+} from '../../models/product.model';
 
-interface ProductImage {
-  id:       number;
-  imageUrl: string;
-}
-
-export interface ProductPageResponse {
-  content: Product[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  last: boolean;
-}
-
-interface Product {
-  id:            number;
-  name:          string;
-  description:   string;
-  price:         number;
-  stock:         number;
-  trending:      string;
-  isActive:      boolean;
-  createdAt:     string;
-  category?:     Category;
-  productImages: ProductImage[];
-  content: Product[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-}
+// Child components
+import { ProductFiltersComponent }     from './product-filters/product-filters.component';
+import { ProductTableComponent }       from './product-table/product-table.component';
+import { ProductDetailModalComponent } from './product-detail-modal/product-detail-modal.component';
+import { ProductFormModalComponent }   from './product-form-modal/product-form-modal.component';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    ProductFiltersComponent,
+    ProductTableComponent,
+    ProductDetailModalComponent,
+    ProductFormModalComponent,
+  ],
   templateUrl: './products.component.html',
   styleUrl:    './products.component.css'
 })
 export class AdminProductsComponent implements OnInit {
 
-  totalElements: number = 0;
-
-  // ── All Data ───────────────────────────────────
-  allProducts:      Product[]  = [];
-  filteredProducts: Product[]  = [];
-  pagedProducts:    Product[]  = [];
-  categories:       Category[] = [];
+  // ── Data ──────────────────────────────────────
+  products:   Product[]  = [];
+  categories: Category[] = [];
 
   // ── State ──────────────────────────────────────
-  loading  = true;
-  saving   = false;
-  error    = '';
+  loading = true;
+  saving  = false;
+  error   = '';
 
   // ── Filters ────────────────────────────────────
-  searchQuery     = '';
-  filterCategory  = '';
-  filterTrending  = '';
-  filterStatus    = '';
+  filters: ProductFilters = {
+    searchQuery:    '',
+    filterCategory: '',
+    filterTrending: '',
+    filterStatus:   '',
+  };
 
   // ── Sort ───────────────────────────────────────
   sortField: 'name' | 'price' | 'stock' = 'name';
   sortDir:   'asc'  | 'desc'            = 'asc';
 
   // ── Pagination ─────────────────────────────────
-  currentPage = 1;
-  pageSize    = 10;
-  totalPages  = 1;
-  startIndex  = 0;
-  endIndex    = 0;
-  pageNumbers: number[] = [];
+  currentPage:   number   = 1;
+  pageSize:      number   = 10;
+  totalPages:    number   = 1;
+  totalElements: number   = 0;
+  startIndex:    number   = 0;
+  endIndex:      number   = 0;
+  pageNumbers:   number[] = [];
 
   // ── Modals ─────────────────────────────────────
-  showForm    = false;
   showDetails = false;
+  showForm    = false;
 
   selectedProduct: Product | null = null;
   editingProduct:  Product | null = null;
-  activeImageIndex = 0;
-
-  // ── Form ───────────────────────────────────────
-  formData = {
-    name:        '',
-    description: '',
-    price:       0,
-    stock:       0,
-    categoryId:  0,
-    trending:    'n',
-    isActive:    true,
-  };
-
-  selectedFiles:        File[]    = [];
-  selectedFilesPreviews: string[] = [];
-  deleteImageIds:       number[]  = [];
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
+  }
+
+  // ─────────────────────────────────────────────
+  // API CALLS
+  // ─────────────────────────────────────────────
+
+  loadProducts(): void {
+    this.loading = true;
+    const headers = this.authHeaders();
+
+    // Backend ko saare filters + sort + pagination ek saath bhejo
+    let params = new HttpParams()
+      .set('page',  String(this.currentPage - 1))  // backend 0-based page expect karta hai
+      .set('size',  String(this.pageSize))
+      .set('sort',  `${this.sortField},${this.sortDir}`);
+
+    if (this.filters.searchQuery.trim())  params = params.set('search',   this.filters.searchQuery.trim());
+    if (this.filters.filterCategory)      params = params.set('category', this.filters.filterCategory);
+    if (this.filters.filterTrending)      params = params.set('trending', this.filters.filterTrending);
+    if (this.filters.filterStatus)        params = params.set('status',   this.filters.filterStatus);
+
+    this.http.get<ProductPage>(`${environment.apiUrl}/admin/getallproducts`, { headers, params })
+      .subscribe({
+        next: (res) => {
+          this.products      = res.content;
+          this.totalElements = res.totalElements;
+          this.totalPages    = res.totalPages;
+          this.startIndex    = (this.currentPage - 1) * this.pageSize;
+          this.endIndex      = this.startIndex + res.content.length;
+          this.buildPageNumbers();
+          this.loading = false;
+        },
+        error: () => {
+          this.error   = 'Failed to load products.';
+          this.loading = false;
+        }
+      });
   }
 
   loadCategories(): void {
@@ -121,280 +119,122 @@ export class AdminProductsComponent implements OnInit {
   }
 
   // ─────────────────────────────────────────────
-  // DATA LOADING
+  // FILTER / SEARCH / SORT EVENTS (child se aate hain)
   // ─────────────────────────────────────────────
 
-  
-  // 3. Update loadProducts to calculate endIndex correctly for the HTML
-loadProducts(): void {
-  this.loading = true;
-  const headers = this.authHeaders();
-  const params = `?page=${this.currentPage - 1}&size=${this.pageSize}`;
-
-  this.http.get<ProductPageResponse>(`${environment.apiUrl}/admin/getallproducts${params}`, { headers })
-    .subscribe({
-      next: (res) => {
-        this.pagedProducts = res.content; 
-        this.totalElements = res.totalElements; // Make sure this property exists in your class
-        this.totalPages = res.totalPages;
-        
-        // Manual calculation for the "Showing X-Y of Z" text
-        this.startIndex = (this.currentPage - 1) * this.pageSize;
-        this.endIndex = this.startIndex + this.pagedProducts.length;
-        
-        this.loading = false;
-        this.buildPageNumbers();
-      },
-      error: () => {
-        this.error = 'Failed to load products.';
-        this.loading = false;
-      }
-    });
-}
-  
-
-  // ─────────────────────────────────────────────
-  // FILTERS + SORT + PAGINATION
-  // ─────────────────────────────────────────────
+  onFiltersChange(newFilters: ProductFilters): void {
+    this.filters = newFilters;
+  }
 
   onSearch(): void {
+    this.currentPage = 1;  // Search hone par page 1 par reset karo
+    this.loadProducts();
+  }
+
+  onClearSearch(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    this.loadProducts();
   }
 
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.applyFilters();
+  onClearAllFilters(): void {
+    this.filters     = { searchQuery: '', filterCategory: '', filterTrending: '', filterStatus: '' };
+    this.currentPage = 1;
+    this.loadProducts();
   }
 
-  clearAllFilters(): void {
-    this.searchQuery    = '';
-    this.filterCategory = '';
-    this.filterTrending = '';
-    this.filterStatus   = '';
-    this.currentPage    = 1;
-    this.applyFilters();
-  }
-
-  applyFilters(): void {
-    let list = [...this.allProducts];
-
-    // Search
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase();
-      list = list.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q) ||
-        p.category?.name.toLowerCase().includes(q) ||
-        String(p.id).includes(q)
-      );
-    }
-
-    // Category filter
-    if (this.filterCategory) {
-      list = list.filter(p => p.category?.id === Number(this.filterCategory));
-    }
-
-    // Trending filter
-    if (this.filterTrending) {
-      list = list.filter(p => p.trending === this.filterTrending);
-    }
-
-    // Status filter
-    if (this.filterStatus) {
-      list = list.filter(p =>
-        this.filterStatus === 'active' ? p.isActive : !p.isActive
-      );
-    }
-
-    // Sort
-    list.sort((a, b) => {
-      let va: any = a[this.sortField];
-      let vb: any = b[this.sortField];
-      if (typeof va === 'string') va = va.toLowerCase();
-      if (typeof vb === 'string') vb = vb.toLowerCase();
-      if (va < vb) return this.sortDir === 'asc' ? -1 : 1;
-      if (va > vb) return this.sortDir === 'asc' ?  1 : -1;
-      return 0;
-    });
-
-    this.filteredProducts = list;
-    this.updatePagination();
-  }
-
-  sort(field: 'name' | 'price' | 'stock'): void {
+  onSort(field: 'name' | 'price' | 'stock'): void {
     if (this.sortField === field) {
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortField = field;
       this.sortDir   = 'asc';
     }
-    this.applyFilters();
-  }
-
-  onPageSizeChange(): void {
-    this.currentPage = 1; // Reset to page 1
-    this.loadProducts();  // Call the API with the new size
-  }
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
-    this.currentPage = page;
-    this.loadProducts(); // This is the fix! It must call the API
-  }
-  private updatePagination(): void {
-    const total    = this.filteredProducts.length;
-    this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
-    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
-
-    this.startIndex = (this.currentPage - 1) * this.pageSize;
-    this.endIndex   = Math.min(this.startIndex + this.pageSize, total);
-    this.pagedProducts = this.filteredProducts.slice(this.startIndex, this.endIndex);
-    this.buildPageNumbers();
-  }
-
-  private buildPageNumbers(): void {
-    const total   = this.totalPages;
-    const current = this.currentPage;
-    const pages: number[] = [];
-
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (current > 3)          pages.push(-1);       // ellipsis
-      for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
-      if (current < total - 2)  pages.push(-1);       // ellipsis
-      pages.push(total);
-    }
-
-    this.pageNumbers = pages;
+    this.currentPage = 1;
+    this.loadProducts();
   }
 
   // ─────────────────────────────────────────────
-  // MODALS
+  // PAGINATION EVENTS
+  // ─────────────────────────────────────────────
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadProducts();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize    = Number(size);
+    this.currentPage = 1;
+    this.loadProducts();
+  }
+
+  // ─────────────────────────────────────────────
+  // MODAL OPEN/CLOSE
   // ─────────────────────────────────────────────
 
   openDetails(product: Product): void {
-    this.selectedProduct  = product;
-    this.activeImageIndex = 0;
-    this.showDetails      = true;
+    this.selectedProduct = product;
+    this.showDetails     = true;
   }
 
   openAddForm(): void {
     this.editingProduct = null;
-    this.formData = { name: '', description: '', price: 0, stock: 0, categoryId: 0, trending: 'n', isActive: true };
-    this.selectedFiles        = [];
-    this.selectedFilesPreviews = [];
-    this.deleteImageIds       = [];
-    this.showForm = true;
+    this.showForm       = true;
   }
 
   openEditForm(product: Product): void {
-    this.editingProduct = { ...product, productImages: [...(product.productImages || [])] };
-    this.formData = {
-      name:        product.name,
-      description: product.description || '',
-      price:       product.price,
-      stock:       product.stock,
-      categoryId:  product.category?.id || 0,
-      trending:    product.trending || 'n',
-      isActive:    product.isActive,
-    };
-    this.selectedFiles         = [];
-    this.selectedFilesPreviews = [];
-    this.deleteImageIds        = [];
-    this.showForm = true;
+    this.editingProduct = product;
+    this.showDetails    = false;  // detail modal band karo
+    this.showForm       = true;
   }
 
   closeForm(): void {
     this.showForm       = false;
     this.editingProduct = null;
-    this.selectedFiles         = [];
-    this.selectedFilesPreviews = [];
-    this.deleteImageIds        = [];
+    this.error          = '';
   }
 
   // ─────────────────────────────────────────────
-  // IMAGE MANAGEMENT
+  // SAVE (ADD / EDIT)
   // ─────────────────────────────────────────────
 
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    this.addFiles(Array.from(input.files));
-    input.value = '';
-  }
+  onFormSubmit(data: {
+    formData:        ProductFormData;
+    selectedFiles:   File[];
+    deleteImageIds:  number[];
+    primaryImageId:  number | null;
+    reorderedImages: { id: number }[];
+  }): void {
 
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    const files = Array.from(event.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
-    this.addFiles(files);
-  }
-
-  private addFiles(files: File[]): void {
-    files.forEach(file => {
-      this.selectedFiles.push(file);
-      const reader = new FileReader();
-      reader.onload = (e) => this.selectedFilesPreviews.push(e.target?.result as string);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  removeSelectedFile(index: number): void {
-    this.selectedFiles.splice(index, 1);
-    this.selectedFilesPreviews.splice(index, 1);
-  }
-
-  toggleDeleteImage(id: number): void {
-    const idx = this.deleteImageIds.indexOf(id);
-    if (idx >= 0) this.deleteImageIds.splice(idx, 1);
-    else          this.deleteImageIds.push(id);
-  }
-
-  isMarkedForDelete(id: number): boolean {
-    return this.deleteImageIds.includes(id);
-  }
-
-  setPrimaryImage(index: number): void {
-    if (!this.editingProduct) return;
-    const imgs = this.editingProduct.productImages;
-    const [moved] = imgs.splice(index, 1);
-    imgs.unshift(moved);
-  }
-
-  // ─────────────────────────────────────────────
-  // SUBMIT (ADD / EDIT)
-  // ─────────────────────────────────────────────
-
-  submitForm(): void {
-    if (!this.formData.name.trim() || !this.formData.price || !this.formData.categoryId) {
+    const { formData } = data;
+    if (!formData.name.trim() || !formData.price || !formData.categoryId) {
       this.error = 'Please fill all required fields (Name, Price, Category)';
       return;
     }
 
     this.saving = true;
     this.error  = '';
+
     const headers = this.authHeaders();
-
     const payload = new FormData();
-    payload.append('product', new Blob([JSON.stringify({
-      name:        this.formData.name.trim(),
-      description: this.formData.description.trim(),
-      price:       this.formData.price,
-      stock:       this.formData.stock,
-      categoryId:  this.formData.categoryId,
-      trending:    this.formData.trending,
-      isActive:    this.formData.isActive,
-    })], { type: 'application/json' }));
 
-    this.selectedFiles.forEach(file => payload.append('images', file));
+    payload.append('product', JSON.stringify({
+      name:        formData.name.trim(),
+      description: formData.description.trim(),
+      price:       formData.price,
+      stock:       formData.stock,
+      categoryId:  Number(formData.categoryId),
+      trending:    formData.trending,
+      isActive:    formData.isActive,
+    }));
+
+    data.selectedFiles.forEach(file => payload.append('images', file));
 
     if (this.editingProduct) {
-      // Reorder info — send primary image id first
-      const primaryId = this.editingProduct.productImages
-        .filter(img => !this.deleteImageIds.includes(img.id))[0]?.id;
-      if (primaryId) payload.append('primaryImageId', String(primaryId));
-      if (this.deleteImageIds.length) payload.append('deleteImageIds', this.deleteImageIds.join(','));
+      // Edit mode
+      if (data.primaryImageId) payload.append('primaryImageId', String(data.primaryImageId));
+      if (data.deleteImageIds.length) payload.append('deleteImageIds', data.deleteImageIds.join(','));
 
       this.http.post<Product>(
         `${environment.apiUrl}/admin/updateproduct/${this.editingProduct.id}`,
@@ -403,7 +243,9 @@ loadProducts(): void {
         next:  () => { this.onSaveSuccess(); },
         error: (err) => { this.onSaveError(err); }
       });
+
     } else {
+      // Add mode
       this.http.post<Product>(
         `${environment.apiUrl}/admin/addproducts`,
         payload, { headers }
@@ -445,10 +287,22 @@ loadProducts(): void {
   // HELPERS
   // ─────────────────────────────────────────────
 
-  resolveImage(imageUrl: string | undefined | null): string {
-    if (!imageUrl) return '';
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    return `${environment.imageBaseUrl}${imageUrl}`;
+  private buildPageNumbers(): void {
+    const total   = this.totalPages;
+    const current = this.currentPage;
+    const pages: number[] = [];
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (current > 3)         pages.push(-1); // ellipsis
+      for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+      if (current < total - 2) pages.push(-1); // ellipsis
+      pages.push(total);
+    }
+
+    this.pageNumbers = pages;
   }
 
   private authHeaders(): HttpHeaders {

@@ -1,0 +1,99 @@
+<!-- category-products.component.html -->
+<div class="page-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <button class="back-btn" (click)="goBack()">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      <span>Back</span>
+    </button>
+
+    <div class="header-text">
+      <p class="page-eyebrow">Shop by Style</p>
+      <h1 class="page-title">{{ categoryName }}</h1>
+      <p class="product-count" *ngIf="!loading && !error">
+        {{ totalItems }} {{ totalItems === 1 ? 'product' : 'products' }} found
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Skeleton ── -->
+  <div *ngIf="loading" class="products-grid">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="skeleton-img"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line wide"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line price"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Error ── -->
+  <div *ngIf="!loading && error" class="error-state">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p>Could not load products. Please try again.</p>
+    <button class="retry-btn" (click)="fetchProducts()">Retry</button>
+  </div>
+
+  <!-- ── Empty ── -->
+  <div *ngIf="!loading && !error && products.length === 0" class="empty-state">
+    <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <p>No products in <strong>{{ categoryName }}</strong> yet.</p>
+    <button class="retry-btn" (click)="goBack()">Browse Other Categories</button>
+  </div>
+
+  <!-- ── Products Grid ── -->
+  <div *ngIf="!loading && !error && products.length > 0" class="products-grid">
+    <a *ngFor="let product of products; let i = index"
+       class="product-card"
+       [routerLink]="['/products', product.id]">
+
+      <!-- Image -->
+      <div class="card-img-wrap">
+        <img [src]="getFirstImage(product)"
+             [alt]="product.name"
+             loading="lazy"
+             class="card-img" />
+        <div class="card-img-overlay">
+          <span class="view-btn">View Details</span>
+        </div>
+        <span *ngIf="product.trending === 'y'" class="badge trending">Trending</span>
+        <span *ngIf="product.stock <= 5 && product.stock > 0" class="badge low-stock">Only {{ product.stock }} left</span>
+        <span *ngIf="product.stock === 0" class="badge out-of-stock">Out of Stock</span>
+      </div>
+
+      <!-- Info -->
+      <div class="card-body">
+        <p class="card-category">{{ product.category.name }}</p>
+        <h3 class="card-name">{{ product.name }}</h3>
+        <p class="card-desc">{{ product.description }}</p>
+        <div class="card-footer">
+          <span class="card-price">₹{{ product.price | number:'1.0-0' }}</span>
+          <div class="card-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- ── Pagination ── -->
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
+    <button class="page-btn nav" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+
+    <button *ngFor="let p of getPageNumbers()"
+            class="page-btn"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">
+      {{ p + 1 }}
+    </button>
+
+    <button class="page-btn nav" [disabled]="currentPage === totalPages - 1" (click)="goToPage(currentPage + 1)">
+      <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+
+</div>

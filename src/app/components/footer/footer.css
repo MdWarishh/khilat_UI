@@ -1,0 +1,358 @@
+/* footer/footer.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ══════════════════════════════════════════
+   FOOTER — Luxury Dark Editorial
+══════════════════════════════════════════ */
+
+.footer {
+  background:   #141010;
+  color:        rgba(255, 245, 228, 0.75);
+  font-family:  'DM Sans', sans-serif;
+  position:     relative;
+  overflow:     hidden;
+}
+
+/* Subtle noise texture overlay */
+.footer::before {
+  content:  '';
+  position: absolute;
+  inset:    0;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255,148,148,0.06) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.footer-body {
+  position:   relative;
+  z-index:    1;
+  max-width:  1280px;
+  margin:     0 auto;
+  padding:    0 2rem 0;
+}
+
+/* ── ORNAMENT ── */
+.footer-ornament {
+  display:        flex;
+  align-items:    center;
+  gap:            18px;
+  max-width:      1280px;
+  margin:         0 auto;
+  padding:        0 2rem;
+  position:       relative;
+  z-index:        1;
+  padding-top:    3.5rem;
+  padding-bottom: 3rem;
+}
+
+.orn-line {
+  flex:             1;
+  height:           1px;
+  background:       linear-gradient(90deg, transparent, rgba(255,148,148,0.25), rgba(255,245,228,0.15), rgba(255,148,148,0.25), transparent);
+}
+
+.orn-star {
+  color:      #FF9494;
+  flex-shrink: 0;
+  opacity:    0.7;
+  animation:  spin-slow 12s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── MAIN GRID ── */
+.footer-grid {
+  display:               grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1.6fr;
+  gap:                   3rem;
+  padding-bottom:        3rem;
+  border-bottom:         1px solid rgba(255,245,228,0.07);
+}
+
+/* Brand Column */
+.col-brand {}
+
+.brand-logo {
+  display:     flex;
+  align-items: baseline;
+  gap:         6px;
+  margin-bottom: 1rem;
+}
+
+.brand-serif {
+  font-family: 'Cormorant Garamond', serif;
+  font-size:   2.4rem;
+  font-weight: 500;
+  color:       #FFF5E4;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.brand-serif.italic {
+  font-style:  italic;
+  font-weight: 400;
+  color:       #FF9494;
+}
+
+.brand-desc {
+  font-size:   0.83rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color:       rgba(255,245,228,0.45);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* Social buttons */
+.social-row {
+  display: flex;
+  gap:     10px;
+}
+
+.soc-btn {
+  width:           36px;
+  height:          36px;
+  border:          1px solid rgba(255,245,228,0.12);
+  border-radius:   10px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  color:           rgba(255,245,228,0.5);
+  text-decoration: none;
+  transition:      all 0.3s ease;
+  background:      rgba(255,255,255,0.03);
+}
+
+.soc-btn:hover {
+  border-color: #FF9494;
+  color:        #FF9494;
+  background:   rgba(255,148,148,0.08);
+  transform:    translateY(-2px);
+}
+
+/* Link Columns */
+.col-links {}
+
+.col-title {
+  font-family:    'Cormorant Garamond', serif;
+  font-size:      0.65rem;
+  font-weight:    600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color:          rgba(255,245,228,0.35);
+  margin-bottom:  1.25rem;
+}
+
+.col-links ul,
+.col-contact ul {
+  list-style: none;
+  padding:    0;
+  margin:     0;
+  display:    flex;
+  flex-direction: column;
+  gap:        0;
+}
+
+.col-links ul li a {
+  display:         block;
+  font-size:       0.85rem;
+  font-weight:     300;
+  color:           rgba(255,245,228,0.5);
+  text-decoration: none;
+  padding:         6px 0;
+  letter-spacing:  0.01em;
+  position:        relative;
+  transition:      color 0.25s ease;
+}
+
+.col-links ul li a::before {
+  content:    '';
+  position:   absolute;
+  left:       0;
+  bottom:     5px;
+  width:      0;
+  height:     1px;
+  background: #FF9494;
+  transition: width 0.3s ease;
+}
+
+.col-links ul li a:hover {
+  color: #FFF5E4;
+}
+
+.col-links ul li a:hover::before {
+  width: 100%;
+}
+
+/* Contact column */
+.col-contact {}
+
+.contact-list {
+  list-style:   none;
+  padding:      0;
+  margin:       0 0 1.5rem;
+  display:      flex;
+  flex-direction: column;
+  gap:          10px;
+}
+
+.contact-list li {
+  display:     flex;
+  align-items: flex-start;
+  gap:         10px;
+  font-size:   0.82rem;
+  font-weight: 300;
+  color:       rgba(255,245,228,0.5);
+  line-height: 1.5;
+}
+
+.contact-list li svg {
+  flex-shrink: 0;
+  margin-top:  2px;
+  color:       rgba(255,148,148,0.6);
+}
+
+/* Newsletter */
+.newsletter {}
+
+.nl-label {
+  font-size:      0.65rem;
+  font-weight:    600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color:          rgba(255,245,228,0.3);
+  margin-bottom:  0.75rem;
+}
+
+.nl-row {
+  display: flex;
+  gap:     0;
+}
+
+.nl-input {
+  flex:         1;
+  padding:      10px 14px;
+  background:   rgba(255,255,255,0.05);
+  border:       1px solid rgba(255,245,228,0.1);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color:        #FFF5E4;
+  font-size:    0.82rem;
+  font-family:  'DM Sans', sans-serif;
+  outline:      none;
+  transition:   border-color 0.2s ease;
+}
+
+.nl-input::placeholder { color: rgba(255,245,228,0.2); }
+.nl-input:focus        { border-color: rgba(255,148,148,0.4); background: rgba(255,255,255,0.07); }
+
+.nl-btn {
+  padding:         10px 16px;
+  background:      #FF9494;
+  border:          none;
+  border-radius:   0 8px 8px 0;
+  color:           #141010;
+  cursor:          pointer;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  transition:      background 0.2s ease;
+}
+
+.nl-btn:hover { background: #FFB8B8; }
+
+/* ── TRUST STRIP ── */
+.trust-strip {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-wrap:       wrap;
+  gap:             8px 0;
+  padding:         2rem 0;
+  border-bottom:   1px solid rgba(255,245,228,0.07);
+}
+
+.trust-item {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  padding:     0 2rem;
+  font-size:   0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color:       rgba(255,245,228,0.4);
+  transition:  color 0.2s ease;
+}
+
+.trust-item:hover { color: rgba(255,245,228,0.75); }
+.trust-item svg   { color: rgba(255,148,148,0.55); flex-shrink: 0; }
+
+.trust-dot {
+  color:     rgba(255,148,148,0.3);
+  font-size: 0.55rem;
+}
+
+/* ── BOTTOM BAR ── */
+.footer-bottom {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         1.5rem 0 2.5rem;
+  flex-wrap:       wrap;
+  gap:             10px;
+}
+
+.copy {
+  font-size:   0.75rem;
+  font-weight: 300;
+  color:       rgba(255,245,228,0.25);
+  letter-spacing: 0.03em;
+}
+
+.bottom-links {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+}
+
+.bottom-links a {
+  font-size:       0.73rem;
+  font-weight:     300;
+  color:           rgba(255,245,228,0.25);
+  text-decoration: none;
+  letter-spacing:  0.03em;
+  transition:      color 0.2s ease;
+}
+
+.bottom-links a:hover { color: rgba(255,245,228,0.6); }
+
+.b-dot { color: rgba(255,245,228,0.15); font-size: 0.7rem; }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap:                   2.5rem;
+  }
+  .col-brand { grid-column: 1 / -1; }
+  .trust-item { padding: 0 1.25rem; }
+}
+
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap:                   2rem;
+  }
+  .footer-ornament { padding-top: 2.5rem; padding-bottom: 2rem; }
+  .brand-serif      { font-size: 2rem; }
+  .trust-strip      { gap: 14px 0; }
+  .trust-item       { padding: 0 1rem; font-size: 0.7rem; }
+  .trust-dot        { display: none; }
+  .footer-bottom    { flex-direction: column; align-items: center; text-align: center; }
+  .bottom-links     { flex-wrap: wrap; justify-content: center; }
+}

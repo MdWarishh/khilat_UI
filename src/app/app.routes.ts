@@ -21,17 +21,17 @@ export const routes: Routes = [
     loadComponent: () => import('./components/about/about').then(m => m.About),
   },
   {
-    path: 'categories',
-    loadComponent: () => import('./components/categories/categories').then(m => m.Categories),
+    path: 'categories-products',
+    loadComponent: () => import('./components/category-products/category-products.component').then(m => m.CategoryProductsComponent),
   },
   {
     path: 'contact',
     loadComponent: () => import('./components/contact/contact').then(m => m.Contact),
   },
-  // {
-  //   path: 'products',
-  //   loadComponent: () => import('./components/products/products').then(m => m.Products),
-  // },
+  {
+    path: 'category-products',
+    loadComponent: () => import('./components/category-products/category-products.component').then(m => m.CategoryProductsComponent),
+  },
   {
     path: 'products/:id',
     loadComponent: () => import('./components/product-detail/product-detail').then(m => m.ProductDetail),
