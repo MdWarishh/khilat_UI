@@ -150,7 +150,7 @@
           <div class="summary-item" *ngFor="let item of cartItems">
             <div class="item-info">
               <span class="item-name">{{ getProductName(item) }}</span>
-              <span class="item-qty">Qty: {{ getProductQty(item) }}</span>
+              <span class="item-qty">Qty: {{ getProductQty(item) }} · Size: {{ item.variant.size }}</span>
             </div>
             <span class="item-price">₹{{ getItemTotal(item) }}</span>
           </div>

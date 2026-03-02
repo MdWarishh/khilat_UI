@@ -4,9 +4,16 @@
 
     <!-- Header -->
     <div class="modal-head">
-      <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+      <div class="modal-head-left">
+        <div class="modal-head-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+        </div>
+        <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
+      </div>
       <button class="btn-close" (click)="onClose.emit()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
@@ -14,124 +21,209 @@
 
     <!-- Error -->
     <div class="error-alert" *ngIf="error">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       {{ error }}
     </div>
 
-    <form (ngSubmit)="submitForm()" class="product-form" novalidate>
+    <form (ngSubmit)="submitForm()" novalidate>
       <div class="form-scroll">
 
-        <!-- Name -->
-        <div class="field-group">
-          <label>Product Name <span class="req">*</span></label>
-          <input type="text" [(ngModel)]="formData.name" name="name" required
-                 placeholder="e.g. Floral Anarkali Kurti">
-        </div>
+        <!-- ── SECTION: Basic Info ── -->
+        <div class="form-section">
+          <div class="section-label">Basic Info</div>
 
-        <!-- Description -->
-        <div class="field-group">
-          <label>Description</label>
-          <textarea [(ngModel)]="formData.description" name="description"
-                    rows="3" placeholder="Short product description..."></textarea>
-        </div>
-
-        <!-- Price + Stock -->
-        <div class="form-row-2">
           <div class="field-group">
-            <label>Price (₹) <span class="req">*</span></label>
-            <input type="number" [(ngModel)]="formData.price" name="price" required min="1" placeholder="749">
+            <label>Product Name <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required
+                   placeholder="e.g. Floral Anarkali Kurti">
           </div>
-          <div class="field-group">
-            <label>Stock <span class="req">*</span></label>
-            <input type="number" [(ngModel)]="formData.stock" name="stock" required min="0" placeholder="40">
-          </div>
-        </div>
 
-        <!-- Category -->
-        <div class="field-group">
-          <label>Category <span class="req">*</span></label>
-          <select [(ngModel)]="formData.categoryId" name="categoryId" required
-                  [class.placeholder-sel]="!formData.categoryId">
-            <option [ngValue]="0" disabled>— Select Category —</option>
-            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
-          </select>
-        </div>
-
-        <!-- Trending + Status -->
-        <div class="form-row-2">
           <div class="field-group">
-            <label>Trending</label>
-            <select [(ngModel)]="formData.trending" name="trending">
-              <option value="n">No</option>
-              <option value="y">Yes — 🔥</option>
-            </select>
+            <label>Description</label>
+            <textarea [(ngModel)]="formData.description" name="description"
+                      rows="3" placeholder="Short product description..."></textarea>
           </div>
-          <div class="field-group">
-            <label>Status</label>
-            <select [(ngModel)]="formData.isActive" name="isActive">
-              <option [ngValue]="true">Active</option>
-              <option [ngValue]="false">Inactive</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- Existing Images (Edit mode only) -->
-        <div class="field-group" *ngIf="editingProduct && localImages.length">
-          <label>
-            Current Images
-            <span class="label-hint">Click ✕ to remove · First image = Primary</span>
-          </label>
-          <div class="img-grid">
-            <div *ngFor="let img of localImages; let i = index"
-                 class="img-thumb"
-                 [class.primary]="i === 0"
-                 [class.marked-delete]="isMarkedForDelete(img.id)">
-              <img [src]="resolveImage(img.imageUrl)" alt="">
-              <span class="primary-badge" *ngIf="i === 0">Primary</span>
-              <button type="button" class="img-remove" (click)="toggleDeleteImage(img.id)">
-                {{ isMarkedForDelete(img.id) ? '↩' : '✕' }}
-              </button>
-              <button type="button" class="img-primary-btn"
-                      *ngIf="i !== 0 && !isMarkedForDelete(img.id)"
-                      (click)="setPrimaryImage(i)"
-                      title="Set as primary">★</button>
+          <div class="form-row-2">
+            <div class="field-group">
+              <label>Category <span class="req">*</span></label>
+              <select [(ngModel)]="formData.categoryId" name="categoryId" required
+                      [class.placeholder-sel]="!formData.categoryId">
+                <option [ngValue]="0" disabled>— Select —</option>
+                <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Trending</label>
+              <select [(ngModel)]="formData.trending" name="trending">
+                <option value="NO">No</option>
+                <option value="YES">🔥 Yes</option>
+              </select>
             </div>
           </div>
-          <p class="delete-hint" *ngIf="deleteImageIds.length">
-            {{ deleteImageIds.length }} image(s) will be removed on save
-          </p>
+
+          <div class="field-group">
+            <label>Status</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-btn" [class.active]="formData.isActive"
+                      (click)="formData.isActive = true">
+                <span class="toggle-dot"></span> Active
+              </button>
+              <button type="button" class="toggle-btn inactive" [class.active]="!formData.isActive"
+                      (click)="formData.isActive = false">
+                <span class="toggle-dot"></span> Inactive
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- New Images Upload -->
-        <div class="field-group">
-          <label>{{ editingProduct ? 'Add More Images' : 'Product Images' }}</label>
+        <!-- ── SECTION: Size Variants ── -->
+        <div class="form-section">
+          <div class="section-label">Size Variants <span class="req">*</span></div>
+          <p class="section-sub">Har size ka price aur stock alag set karo</p>
+
+          <!-- Variants list -->
+          <div class="variants-list" *ngIf="formData.variants.length">
+            <div class="variant-row" *ngFor="let variant of formData.variants; let i = index">
+
+              <div class="variant-field">
+                <span class="variant-label">Size</span>
+                <select [(ngModel)]="variant.size" [name]="'size_' + i" class="variant-select">
+                  <option value="" disabled>—</option>
+                  <option *ngFor="let s of getAvailableSizes(i)"
+                          [value]="s" [disabled]="isSizeUsed(s, i)">{{ s }}</option>
+                  <option *ngIf="variant.size && !SIZE_OPTIONS.includes(variant.size)"
+                          [value]="variant.size">{{ variant.size }}</option>
+                </select>
+              </div>
+
+              <div class="variant-field">
+                <span class="variant-label">Price (₹)</span>
+                <input type="number" [(ngModel)]="variant.price" [name]="'price_' + i"
+                       min="1" placeholder="799" class="variant-input">
+              </div>
+
+              <div class="variant-field">
+                <span class="variant-label">Stock</span>
+                <input type="number" [(ngModel)]="variant.stock" [name]="'stock_' + i"
+                       min="0" placeholder="50" class="variant-input">
+              </div>
+
+              <button type="button" class="variant-remove" (click)="removeVariant(i)" title="Remove">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="variants-empty" *ngIf="!formData.variants.length">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Abhi koi size add nahi kiya — neeche se add karo</span>
+          </div>
+
+          <!-- Add size button -->
+          <button type="button" class="btn-add-variant"
+                  (click)="addVariant()"
+                  [disabled]="formData.variants.length >= SIZE_OPTIONS.length">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Size
+            <span class="variant-count-badge" *ngIf="formData.variants.length">
+              {{ formData.variants.length }}/{{ SIZE_OPTIONS.length }}
+            </span>
+          </button>
+        </div>
+
+        <!-- ── SECTION: Images ── -->
+        <div class="form-section">
+          <div class="section-label">{{ editingProduct ? 'Manage Images' : 'Product Images' }}</div>
+
+          <!-- Existing images (edit mode) — with primary selection -->
+          <div *ngIf="editingProduct && localImages.length">
+            <p class="section-sub">Pehli image front par dikhti hai — star click karke primary set karo</p>
+            <div class="img-grid">
+              <div *ngFor="let img of localImages; let i = index"
+                   class="img-thumb"
+                   [class.primary]="i === 0"
+                   [class.marked-delete]="isMarkedForDelete(img.id)"
+                   (click)="!isMarkedForDelete(img.id) && setPrimaryImage(i)">
+
+                <img [src]="resolveImage(img.imageUrl)" alt="">
+
+                <!-- Primary crown badge -->
+                <div class="primary-crown" *ngIf="i === 0 && !isMarkedForDelete(img.id)">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Front
+                </div>
+
+                <!-- Delete toggle -->
+                <button type="button" class="img-remove" (click)="$event.stopPropagation(); toggleDeleteImage(img.id)"
+                        [title]="isMarkedForDelete(img.id) ? 'Undo remove' : 'Remove'">
+                  <svg *ngIf="!isMarkedForDelete(img.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  <svg *ngIf="isMarkedForDelete(img.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/>
+                  </svg>
+                </button>
+
+                <!-- Click hint overlay on non-primary -->
+                <div class="set-front-hint" *ngIf="i !== 0 && !isMarkedForDelete(img.id)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Front set karo
+                </div>
+              </div>
+            </div>
+            <p class="delete-hint" *ngIf="deleteImageIds.length">
+              ⚠️ {{ deleteImageIds.length }} image(s) save hone par delete honge
+            </p>
+          </div>
+
+          <!-- Upload zone -->
           <div class="upload-zone" (click)="fileInput.click()"
                (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
               <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
             </svg>
-            <p>Click or drag images here</p>
-            <span>PNG, JPG, WEBP up to 5MB each</span>
+            <p>Click ya drag karo</p>
+            <span>PNG · JPG · WEBP · max 5MB</span>
           </div>
           <input #fileInput type="file" multiple accept="image/*"
                  (change)="onFileChange($event)" style="display:none">
 
-          <!-- New file previews -->
           <div class="img-grid" *ngIf="selectedFiles.length">
-            <div *ngFor="let file of selectedFilesPreviews; let i = index" class="img-thumb">
+            <div *ngFor="let file of selectedFilesPreviews; let i = index" class="img-thumb new-img">
               <img [src]="file" alt="">
-              <span class="primary-badge" *ngIf="!editingProduct && i === 0">Primary</span>
-              <button type="button" class="img-remove" (click)="removeSelectedFile(i)">✕</button>
+              <div class="primary-crown" *ngIf="!editingProduct && i === 0">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Front
+              </div>
+              <button type="button" class="img-remove" (click)="removeSelectedFile(i)">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
 
       </div><!-- /form-scroll -->
 
-      <!-- Form Actions -->
+      <!-- Actions -->
       <div class="form-actions">
         <button type="button" class="btn-cancel" (click)="onClose.emit()">Cancel</button>
         <button type="submit" class="btn-save" [disabled]="saving">
@@ -139,7 +231,6 @@
           {{ saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product') }}
         </button>
       </div>
-
     </form>
   </div>
 </div>

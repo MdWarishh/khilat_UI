@@ -2,38 +2,42 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environments';
 
-export interface CartItem {
+// Backend response ke hisab se sahi interface
+export interface CartVariant {
   id: number;
-  product: {
+  size: string;
+  price: number;
+  stock: number;
+  product?: {
     id: number;
     name: string;
-    price: number;
     description: string;
-    stock: number;
     trending: string;
     isActive: boolean;
     createdAt: string;
-    productImages: string[];
-    category: {
-      id: number;
-      name: string;
-      description: string | null;
-    };
+    productImages: { id: number; imageUrl: string }[];
+    category: { id: number; name: string; description: string | null };
   };
-  quantity: number;
-  price: number;
+}
+
+export interface CartItem {
+  id: number;         // cart item id
   cart: {
     id: number;
     guestId: string;
     createdAt: string | null;
   };
+  variant: CartVariant;
+  quantity: number;
+  price: number;      // variant price
 }
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
 
-  private readonly BASE_URL = 'http://localhost:8080/api/cart';
+  private readonly BASE_URL = `${environment.apiUrl}/cart`;
   private readonly GUEST_KEY = 'guest_id';
 
   private cartSubject = new BehaviorSubject<CartItem[]>([]);
@@ -41,7 +45,7 @@ export class CartService {
 
   constructor(private http: HttpClient) {}
 
-  // ── Guest ID Management ──
+  // ── Guest ID ──
   getGuestId(): string {
     let guestId = localStorage.getItem(this.GUEST_KEY);
     if (!guestId) {
@@ -51,7 +55,7 @@ export class CartService {
     return guestId;
   }
 
-  // ── Fetch cart from backend ──
+  // ── Fetch cart ──
   fetchCart(): Observable<CartItem[]> {
     const guestId = this.getGuestId();
     return this.http.get<CartItem[]>(`${this.BASE_URL}/${guestId}`).pipe(
@@ -60,51 +64,59 @@ export class CartService {
   }
 
   // ── Add item ──
-  addItem(productId: number, quantity: number = 1): Observable<any> {
+  addItem(productId: number, quantity: number = 1, variantId?: number): Observable<any> {
     const guestId = this.getGuestId();
-    const payload = { guestId, productId: String(productId), quantity: String(quantity) };
+    const payload: any = {
+      guestId,
+      productId: String(productId),
+      quantity:  String(quantity)
+    };
+    if (variantId) payload.variantId = String(variantId);
     return this.http.post(`${this.BASE_URL}/addcart`, payload).pipe(
       tap(() => this.fetchCart().subscribe())
     );
   }
 
-  // ── Increment qty ──
-  increment(productId: number): void {
-    const item = this.cartSubject.value.find(i => i.product.id === productId);
-    if (item) {
-      this.addItem(productId, 1).subscribe();
-    }
+  // ── Increment ──
+  increment(variantId: number): void {
+    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
+    if (item) this.addItem(0, 1, variantId).subscribe();
   }
 
-  // ── Decrement qty ──
-  decrement(productId: number): void {
-    const item = this.cartSubject.value.find(i => i.product.id === productId);
+  // ── Decrement ──
+  decrement(variantId: number): void {
+    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
     if (!item) return;
     if (item.quantity <= 1) {
-      this.remove(productId);
+      this.removeByVariant(variantId);
     } else {
-      this.addItem(productId, -1).subscribe();
+      this.addItem(0, -1, variantId).subscribe();
     }
   }
 
-  // ── Remove item ──
-  remove(productId: number): void {
+  // ── Remove by cart item id ──
+  removeItem(cartItemId: number): void {
     const guestId = this.getGuestId();
-    this.http.delete(`${this.BASE_URL}/${guestId}/${productId}`).subscribe({
-      next: () => this.fetchCart().subscribe(),
+    this.http.delete(`${this.BASE_URL}/${guestId}/${cartItemId}`).subscribe({
+      next:  () => this.fetchCart().subscribe(),
       error: () => {
-        // Fallback: remove locally if API fails
-        const updated = this.cartSubject.value.filter(i => i.product.id !== productId);
+        const updated = this.cartSubject.value.filter(i => i.id !== cartItemId);
         this.cartSubject.next(updated);
       }
     });
+  }
+
+  // ── Remove by variant id ──
+  removeByVariant(variantId: number): void {
+    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
+    if (item) this.removeItem(item.id);
   }
 
   // ── Clear cart ──
   clearCart(): void {
     const guestId = this.getGuestId();
     this.http.delete(`${this.BASE_URL}/${guestId}`).subscribe({
-      next: () => this.cartSubject.next([]),
+      next:  () => this.cartSubject.next([]),
       error: () => this.cartSubject.next([])
     });
   }
@@ -120,11 +132,7 @@ export class CartService {
     return this.cartSubject.value.reduce((s, i) => s + i.price * i.quantity, 0);
   }
 
-  isInCart(productId: number): boolean {
-    return this.cartSubject.value.some(i => i.product.id === productId);
+  isInCart(variantId: number): boolean {
+    return this.cartSubject.value.some(i => i.variant.id === variantId);
   }
-
-  getItemQty(productId: number): number {
-    return this.cartSubject.value.find(i => i.product.id === productId)?.quantity || 0;
-  } 
 }

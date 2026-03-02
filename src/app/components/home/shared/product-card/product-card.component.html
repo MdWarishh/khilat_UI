@@ -4,6 +4,7 @@
   [style.animation-delay]="animDelay"
   (click)="productClick.emit(product.id)">
 
+  <!-- Image -->
   <div class="product-img-wrap">
     <span class="product-badge" [ngClass]="badgeClass">{{ badgeLabel }}</span>
     <img [src]="product.image?.[0] || product.image" [alt]="product.name" class="product-img"
@@ -15,32 +16,85 @@
     </div>
   </div>
 
+  <!-- Info -->
   <div class="product-info">
     <span class="product-category" *ngIf="product.category">{{ product.category.name }}</span>
     <h3 class="product-name">{{ product.name }}</h3>
     <p class="product-desc" *ngIf="product.description">
-      {{ product.description.length > 55 ? (product.description | slice:0:55) + '…' : product.description }}
+      {{ product.description.length > 60 ? (product.description | slice:0:60) + '…' : product.description }}
     </p>
+
     <div class="product-footer">
-      <span class="product-price">₹{{ product.price }}</span>
-      <span class="stock-tag in-stock"  *ngIf="product.stock > 0">In Stock</span>
-      <span class="stock-tag out-stock" *ngIf="product.stock === 0">Sold Out</span>
+      <span class="product-price">{{ displayPrice }}</span>
+      <span class="stock-tag" [ngClass]="stockClass" *ngIf="selectedSize">{{ stockLabel }}</span>
     </div>
 
+    <!-- Controls -->
     <div class="cart-controls" (click)="$event.stopPropagation()">
-      <div class="qty-selector">
-        <button class="qty-btn minus"
-          (click)="decrement.emit(product.id)"
-          [disabled]="qty <= 1 && !inCart">−</button>
-        <span class="qty-display">{{ qty }}</span>
-        <button class="qty-btn plus" (click)="increment.emit(product.id)">+</button>
+
+      <!-- Size dropdown -->
+      <div class="size-row" *ngIf="product.variants?.length">
+        <label class="size-label">Size</label>
+        <div class="size-select-wrap">
+          <select class="size-select" [(ngModel)]="selectedSize">
+            <option value="" disabled>Select size</option>
+            <option *ngFor="let v of product.variants"
+                    [value]="v.size"
+                    [disabled]="v.stock === 0">
+              {{ v.size }}{{ v.stock === 0 ? ' — Sold Out' : '' }}
+            </option>
+          </select>
+          <svg class="select-chevron" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
-      <button class="add-cart-main"
-        [class.in-cart]="inCart"
-        [disabled]="product.stock <= 0 || inCart"
-        (click)="addToCart.emit(product)">
-        {{ inCart ? '✓ In Cart' : '🛍️ Add to Cart' }}
+
+      <!-- Qty -->
+      <div class="qty-selector">
+        <button class="qty-btn" (click)="decrement.emit(product.id)" [disabled]="qty <= 1 && !inCart">−</button>
+        <span class="qty-display">{{ qty }}</span>
+        <button class="qty-btn" (click)="increment.emit(product.id)">+</button>
+      </div>
+
+      <!-- Add to Cart button -->
+      <button class="add-cart-btn"
+        [class.loading]="cartState === 'loading'"
+        [class.added]="cartState === 'added'"
+        [disabled]="!selectedSize || isOutOfStock || cartState !== 'idle'"
+        (click)="onAddToCart($event)">
+
+        <!-- Idle -->
+        <span class="btn-content idle-content" *ngIf="cartState === 'idle'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          Add to Cart
+        </span>
+
+        <!-- Loading spinner -->
+        <span class="btn-content" *ngIf="cartState === 'loading'">
+          <span class="btn-spinner"></span>
+          Adding...
+        </span>
+
+        <!-- Added -->
+        <span class="btn-content" *ngIf="cartState === 'added'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Added to Cart
+        </span>
+
       </button>
+
+      <!-- No size hint -->
+      <p class="size-hint" *ngIf="!selectedSize && product.variants?.length">
+        Please select a size first
+      </p>
+
     </div>
   </div>
 </div>

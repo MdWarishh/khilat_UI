@@ -259,7 +259,7 @@ export class Checkout implements OnInit, AfterViewInit, OnDestroy {
   // ── Cart display helpers ──────────────────────────────────────
 
   getProductName(item: CartItem): string {
-    return item.product.name;
+    return item.variant?.product?.name ?? 'Product';
   }
 
   getProductQty(item: CartItem): number {

@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule }  from '@angular/common';
 import { FormsModule }   from '@angular/forms';
-import { Category, Product, ProductFormData } from '../../../models/product.model';
+import { Category, Product, ProductFormData, ProductVariant } from '../../../models/product.model';
 import { environment }   from '../../../../environments/environments';
 
 @Component({
@@ -18,57 +18,52 @@ export class ProductFormModalComponent implements OnChanges {
   @Input() saving:         boolean       = false;
   @Input() error:          string        = '';
   @Input() categories:     Category[]   = [];
-  @Input() editingProduct: Product | null = null; // null = add mode
+  @Input() editingProduct: Product | null = null;
 
-  // Events
   @Output() onClose  = new EventEmitter<void>();
   @Output() onSubmit = new EventEmitter<{
-    formData:       ProductFormData;
-    selectedFiles:  File[];
-    deleteImageIds: number[];
-    // Edit mode mein primary image id
-    primaryImageId: number | null;
-    // editingProduct ka updated productImages order (reorder ke liye)
+    formData:        ProductFormData;
+    selectedFiles:   File[];
+    deleteImageIds:  number[];
+    primaryImageId:  number | null;
     reorderedImages: { id: number }[];
   }>();
 
   // Form data
   formData: ProductFormData = {
-    name: '', description: '', price: 0, stock: 0,
-    categoryId: 0, trending: 'n', isActive: true
+    name: '', description: '', categoryId: 0,
+    trending: 'NO', isActive: true, variants: []
   };
 
   // Image state
   selectedFiles:         File[]    = [];
   selectedFilesPreviews: string[]  = [];
   deleteImageIds:        number[]  = [];
-
-  // Local copy of images for reordering (edit mode)
   localImages: { id: number; imageUrl: string }[] = [];
 
-  // Jab modal khule ya editingProduct change ho tab form reset karo
+  // Available sizes
+  readonly SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'Free Size'];
+
   ngOnChanges(): void {
-    if (this.show) {
-      this.resetForm();
-    }
+    if (this.show) this.resetForm();
   }
 
   private resetForm(): void {
     if (this.editingProduct) {
-      // Edit mode
       this.formData = {
         name:        this.editingProduct.name,
         description: this.editingProduct.description || '',
-        price:       this.editingProduct.price,
-        stock:       this.editingProduct.stock,
         categoryId:  Number(this.editingProduct.category?.id || 0),
-        trending:    this.editingProduct.trending || 'n',
+        trending:    this.editingProduct.trending || 'NO',
         isActive:    this.editingProduct.isActive,
+        variants:    this.editingProduct.variants?.map(v => ({ ...v })) || [],
       };
       this.localImages = [...(this.editingProduct.productImages || [])];
     } else {
-      // Add mode
-      this.formData = { name: '', description: '', price: 0, stock: 0, categoryId: 0, trending: 'n', isActive: true };
+      this.formData = {
+        name: '', description: '', categoryId: 0,
+        trending: 'NO', isActive: true, variants: []
+      };
       this.localImages = [];
     }
     this.selectedFiles         = [];
@@ -76,7 +71,25 @@ export class ProductFormModalComponent implements OnChanges {
     this.deleteImageIds        = [];
   }
 
-  // ── Image management ──
+  // ── Variants ──
+
+  addVariant(): void {
+    this.formData.variants.push({ size: '', price: 0, stock: 0 });
+  }
+
+  removeVariant(index: number): void {
+    this.formData.variants.splice(index, 1);
+  }
+
+  isSizeUsed(size: string, currentIndex: number): boolean {
+    return this.formData.variants.some((v, i) => i !== currentIndex && v.size === size);
+  }
+
+  getAvailableSizes(currentIndex: number): string[] {
+    return this.SIZE_OPTIONS.filter(s => !this.isSizeUsed(s, currentIndex));
+  }
+
+  // ── Images ──
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -123,7 +136,7 @@ export class ProductFormModalComponent implements OnChanges {
   resolveImage(imageUrl: string | undefined | null): string {
     if (!imageUrl) return '';
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    return `${environment.imageBaseUrl}${imageUrl}`;
+    return `${environment.imageBaseUrl}/${imageUrl}`;
   }
 
   // ── Submit ──

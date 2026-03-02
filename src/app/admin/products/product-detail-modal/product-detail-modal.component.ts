@@ -13,8 +13,8 @@ import { environment }  from '../../../../environments/environments';
 })
 export class ProductDetailModalComponent implements OnChanges, OnDestroy {
 
-  @Input()  product:  Product | null = null;
-  @Input()  show:     boolean        = false;
+  @Input()  product: Product | null = null;
+  @Input()  show:    boolean        = false;
 
   @Output() onClose = new EventEmitter<void>();
   @Output() onEdit  = new EventEmitter<Product>();
@@ -24,17 +24,27 @@ export class ProductDetailModalComponent implements OnChanges, OnDestroy {
   ngOnChanges(): void {
     if (this.show) {
       this.activeImageIndex = 0;
-      // ✅ FIX: page scroll band karo jab modal khule
       document.body.style.overflow = 'hidden';
     } else {
-      // ✅ FIX: modal band ho to page scroll wapas chalu
       document.body.style.overflow = '';
     }
   }
 
-  // ✅ FIX: component destroy hone par bhi scroll restore karo
   ngOnDestroy(): void {
     document.body.style.overflow = '';
+  }
+
+  getPriceDisplay(): string {
+    const variants = this.product?.variants;
+    if (!variants?.length) return '—';
+    const prices = variants.map(v => v.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return min === max ? `₹${min}` : `₹${min} – ₹${max}`;
+  }
+
+  getTotalStock(): number {
+    return this.product?.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0;
   }
 
   resolveImage(imageUrl: string | undefined | null): string {

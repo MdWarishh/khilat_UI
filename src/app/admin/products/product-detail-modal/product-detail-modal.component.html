@@ -14,7 +14,7 @@
 
     <div class="detail-body">
 
-      <!-- Images Section -->
+      <!-- Images -->
       <div class="detail-images" *ngIf="product!.productImages?.length">
         <div class="main-img-wrap">
           <img [src]="resolveImage(product!.productImages[activeImageIndex]?.imageUrl ?? '')"
@@ -22,45 +22,41 @@
         </div>
         <div class="thumb-row" *ngIf="product!.productImages.length > 1">
           <div *ngFor="let img of product!.productImages; let i = index"
-               class="thumb-item"
-               [class.active]="i === activeImageIndex"
+               class="thumb-item" [class.active]="i === activeImageIndex"
                (click)="activeImageIndex = i">
             <img [src]="resolveImage(img.imageUrl)" alt="">
           </div>
         </div>
       </div>
-
-      <!-- No Image Placeholder -->
       <div class="no-image-box" *ngIf="!product!.productImages?.length">
-        <span>📷</span>
-        <p>No images uploaded</p>
+        <span>📷</span><p>No images uploaded</p>
       </div>
 
-      <!-- Product Info -->
+      <!-- Info -->
       <div class="detail-info">
 
         <!-- Badges -->
         <div class="detail-badges">
-          <span class="cat-chip"      *ngIf="product!.category">{{ product!.category!.name }}</span>
-          <span class="trending-chip yes" *ngIf="product!.trending === 'y'">🔥 Trending</span>
+          <span class="cat-chip"       *ngIf="product!.category">{{ product!.category!.name }}</span>
+          <span class="trending-chip yes" *ngIf="product!.trending === 'YES'">🔥 Trending</span>
           <span class="status-chip active" *ngIf="product!.isActive">Active</span>
           <span class="status-chip"        *ngIf="!product!.isActive">Inactive</span>
         </div>
 
         <h3 class="detail-name">{{ product!.name }}</h3>
-        <p class="detail-price">₹{{ product!.price | number:'1.0-0' }}</p>
+        <p class="detail-price">{{ getPriceDisplay() }}</p>
         <p class="detail-desc">{{ product!.description || 'No description provided.' }}</p>
 
-        <!-- Stats Grid -->
+        <!-- Stats -->
         <div class="detail-grid">
           <div class="detail-item">
             <span class="di-label">Product ID</span>
             <span class="di-val">#{{ product!.id }}</span>
           </div>
           <div class="detail-item">
-            <span class="di-label">Stock</span>
-            <span class="di-val" [class.text-red]="product!.stock === 0">
-              {{ product!.stock === 0 ? 'Out of Stock' : product!.stock + ' units' }}
+            <span class="di-label">Total Stock</span>
+            <span class="di-val" [class.text-red]="getTotalStock() === 0">
+              {{ getTotalStock() === 0 ? 'Out of Stock' : getTotalStock() + ' units' }}
             </span>
           </div>
           <div class="detail-item">
@@ -73,10 +69,39 @@
           </div>
         </div>
 
+        <!-- Variants Table -->
+        <div class="variants-section" *ngIf="product!.variants?.length">
+          <p class="variants-heading">Size Variants</p>
+          <table class="variants-table">
+            <thead>
+              <tr>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of product!.variants">
+                <td><span class="size-badge">{{ v.size }}</span></td>
+                <td class="v-price">₹{{ v.price }}</td>
+                <td>{{ v.stock }}</td>
+                <td>
+                  <span class="stock-chip"
+                        [class.out]="v.stock === 0"
+                        [class.low]="v.stock > 0 && v.stock <= 5">
+                    {{ v.stock === 0 ? 'Out of Stock' : v.stock <= 5 ? 'Low Stock' : 'In Stock' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Edit Button -->
         <div class="detail-footer-btns">
           <button class="btn-edit-from-detail" (click)="onEdit.emit(product!)">
-            Edit Product
+            ✏️ Edit Product
           </button>
         </div>
 

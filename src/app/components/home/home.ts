@@ -83,9 +83,14 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────
 
   ngOnInit(): void {
-    // ✅ FIXED: item.product.id instead of item.productId (new CartItem structure)
-    this.cartService.getItems().forEach(item => {
-      this.cartedProducts[item.product.id] = true;
+    // Backend se cart fetch karo — tab cartedProducts aur header count dono update honge
+    this.cartService.fetchCart().subscribe({
+      next: (items) => {
+        items.forEach(item => {
+          const productId = item.variant?.product?.id;
+          if (productId) this.cartedProducts[productId] = true;
+        });
+      }
     });
 
     this.loadCategories();
@@ -123,15 +128,14 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addToCart(product: Product): void {
-    if (this.cartedProducts[product.id] || product.stock <= 0) return;
+  addToCart(product: any): void {
+    const variantId = product.selectedVariant?.id;
+    if (!variantId || this.cartedProducts[product.id]) return;
 
     const qty = this.pendingQuantities[product.id] ?? 1;
 
-    // ✅ FIXED: cartService.addItem now takes (productId, quantity) — no object
-    this.cartService.addItem(product.id, qty).subscribe({
+    this.cartService.addItem(product.id, qty, variantId).subscribe({
       next: () => {
-        // Remove from pending, mark as carted
         const { [product.id]: _, ...rest } = this.pendingQuantities;
         this.pendingQuantities = rest;
         this.cartedProducts    = { ...this.cartedProducts, [product.id]: true };

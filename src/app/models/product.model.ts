@@ -11,24 +11,29 @@ export interface Category {
   description?: string;
 }
 
+export interface ProductVariant {
+  id?: number;
+  size: string;
+  price: number;
+  stock: number;
+}
+
 export interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
-  originalPrice?: number;
-  stock: number;
   isActive: boolean;
-  trending: string;   // 'y' or 'n'
+  trending: string;   // 'YES' or 'NO'
   createdAt: string;
   category: Category;
   productImages: ProductImage[];
+  variants: ProductVariant[];
 
   // Frontend computed — resolveImage() se set hota hai
   image?: string[];
 }
 
-// Pagination response ke liye alag interface — Product se alag rakho
+// Pagination response
 export interface ProductPage {
   content:       Product[];
   totalElements: number;
@@ -37,7 +42,6 @@ export interface ProductPage {
   number:        number;
   last:          boolean;
 }
-
 
 export interface ProductFilters {
   searchQuery:    string;
@@ -49,9 +53,8 @@ export interface ProductFilters {
 export interface ProductFormData {
   name:        string;
   description: string;
-  price:       number;
-  stock:       number;
   categoryId:  number;
   trending:    string;
   isActive:    boolean;
+  variants:    ProductVariant[];
 }

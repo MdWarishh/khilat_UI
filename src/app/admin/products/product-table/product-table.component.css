@@ -207,3 +207,155 @@ td { font-size: 0.85rem; color: var(--mid); }
 
 .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .pg-btn.ellipsis { border: none; cursor: default; }
+/* ── Product thumbnail ── */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.product-thumb {
+  width: 40px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--blush);
+  flex-shrink: 0;
+}
+
+/* ── Expand button ── */
+.expand-btn {
+  width: 24px; height: 24px;
+  border: 1.5px solid rgba(90,74,74,0.15);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--light-mid);
+  transition: all 0.2s ease;
+}
+.expand-btn:hover { border-color: var(--pink); color: var(--pink-dark); }
+.expand-btn.open {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: #fff;
+  transform: rotate(180deg);
+}
+
+/* ── Expanded row ── */
+.expanded-row td { border-bottom: none; }
+.detail-row td { padding: 0; }
+.detail-panel {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  background: #faf7f3;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  animation: expandIn 0.2s ease;
+}
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Detail left */
+.detail-left {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.detail-img {
+  width: 80px; height: 96px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--blush);
+}
+.detail-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+.detail-desc {
+  font-size: 0.78rem;
+  color: var(--light-mid);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.detail-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--light-mid);
+  width: 60px;
+}
+.detail-val { font-size: 0.8rem; color: var(--mid); }
+
+/* Variants table (inside detail panel) */
+.variants-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--light-mid);
+  margin-bottom: 10px;
+}
+.variants-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.variants-table th {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--light-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  background: #faf7f3;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.variants-table td {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--mid);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.variants-table tr:last-child td { border-bottom: none; }
+
+.size-badge {
+  background: rgba(28,28,28,0.08);
+  color: var(--dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.v-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* Variant count pill */
+.variant-count {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--light-mid);
+  background: rgba(90,74,74,0.08);
+  padding: 3px 9px;
+  border-radius: 20px;
+}

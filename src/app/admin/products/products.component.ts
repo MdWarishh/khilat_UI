@@ -208,8 +208,16 @@ export class AdminProductsComponent implements OnInit {
   }): void {
 
     const { formData } = data;
-    if (!formData.name.trim() || !formData.price || !formData.categoryId) {
-      this.error = 'Please fill all required fields (Name, Price, Category)';
+    if (!formData.name.trim() || !formData.categoryId) {
+      this.error = 'Please fill all required fields (Name, Category)';
+      return;
+    }
+    if (!formData.variants.length) {
+      this.error = 'Kam se kam ek size variant add karo';
+      return;
+    }
+    if (formData.variants.some(v => !v.size || !v.price)) {
+      this.error = 'Har variant me size aur price required hai';
       return;
     }
 
@@ -222,11 +230,15 @@ export class AdminProductsComponent implements OnInit {
     payload.append('product', JSON.stringify({
       name:        formData.name.trim(),
       description: formData.description.trim(),
-      price:       formData.price,
-      stock:       formData.stock,
       categoryId:  Number(formData.categoryId),
       trending:    formData.trending,
       isActive:    formData.isActive,
+      variants:    formData.variants.map(v => ({
+        ...(v.id ? { id: v.id } : {}),   // edit mode me id bhejo
+        size:  v.size.trim(),
+        price: Number(v.price),
+        stock: Number(v.stock),
+      })),
     }));
 
     data.selectedFiles.forEach(file => payload.append('images', file));
