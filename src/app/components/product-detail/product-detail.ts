@@ -16,7 +16,7 @@ import { environment }       from '../../../environments/environments';
 })
 export class ProductDetail implements OnInit {
 
-  product:      Product | null = null;
+  product:      any | null = null;
   loading       = true;
   error         = false;
   pageVisible   = false;
@@ -26,14 +26,8 @@ export class ProductDetail implements OnInit {
   activeImageIndex: number   = 0;
   isZoomed        = false;
 
-  sizes:  string[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  colors: { name: string; hex: string }[] = [
-    { name: 'Blush Pink', hex: '#FFD1D1' },
-    { name: 'Ivory',      hex: '#FFF5E4' },
-    { name: 'Deep Rose',  hex: '#FF9494' },
-    { name: 'Charcoal',   hex: '#3d3d3d' },
-    { name: 'Sage Green', hex: '#b2c9ad' },
-  ];
+  // Variants-derived — hardcoded sizes/colors hata diye
+  sizes:  string[] = [];
   selectedSize  = '';
   selectedColor = '';
   qty           = 1;
@@ -53,7 +47,7 @@ export class ProductDetail implements OnInit {
       const id = params['id'];
       if (id) {
         this.resetState();
-        this.loadProduct(Number(id));  // ← FIX: string → number
+        this.loadProduct(Number(id));
       }
     });
   }
@@ -75,6 +69,7 @@ export class ProductDetail implements OnInit {
     this.relatedProducts  = [];
     this.images           = [];
     this.activeImage      = '';
+    this.sizes            = [];
   }
 
   private loadProduct(id: number): void {
@@ -82,6 +77,7 @@ export class ProductDetail implements OnInit {
       next: (product: any) => {
         this.product = product;
         this.setupImages(product);
+        this.setupVariants(product);
         this.checkIfNew(product);
         this.loading = false;
         setTimeout(() => (this.pageVisible = true), 80);
@@ -100,13 +96,16 @@ export class ProductDetail implements OnInit {
 
   private loadRelated(categoryId: number, currentProductId: number): void {
     this.productService.getProductsByCategory(categoryId).subscribe({
-      next: (products: Product[]) => {
+      next: (products: any[]) => {
         this.relatedProducts = products
-          .filter(p => p.id !== currentProductId)
+          .filter((p: any) => p.id !== currentProductId)
           .slice(0, 4)
-          .map(p => ({ ...p, image: this.resolveImage(p) }));
+          .map((p: any) => ({ ...p, image: this.resolveImage(p) }));
       },
-      error: () => {}
+      error: () => {
+        // API not available — silently skip related products
+        this.relatedProducts = [];
+      }
     });
   }
 
@@ -150,32 +149,99 @@ export class ProductDetail implements OnInit {
   }
 
   // ─────────────────────────────────────────────
+  // VARIANTS — sizes API response ke variants se
+  // ─────────────────────────────────────────────
+
+  private setupVariants(product: any): void {
+    if (product.variants && product.variants.length > 0) {
+      this.sizes = product.variants.map((v: any) => v.size);
+      // Auto-select first available size
+      const firstAvailable = product.variants.find((v: any) => v.stock > 0);
+      if (firstAvailable) this.selectedSize = firstAvailable.size;
+    } else {
+      this.sizes = [];
+    }
+  }
+
+  /** Selected size ka variant object */
+  get selectedVariant(): any {
+    if (!this.product?.variants || !this.selectedSize) return null;
+    return this.product.variants.find((v: any) => v.size === this.selectedSize) ?? null;
+  }
+
+  /** Display price — selected variant ka, ya range */
+  get displayPrice(): string {
+    if (this.selectedVariant) return `₹${this.selectedVariant.price}`;
+    const prices = this.product?.variants?.map((v: any) => v.price) ?? [];
+    if (!prices.length) return '';
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return min === max ? `₹${min}` : `₹${min} – ₹${max}`;
+  }
+
+  /** Selected variant ka stock */
+  get currentStock(): number {
+    return this.selectedVariant?.stock ?? 0;
+  }
+
+  /** Kya poora product out of stock hai */
+  get isFullyOutOfStock(): boolean {
+    const variants = this.product?.variants;
+    if (!variants?.length) return false;
+    return variants.every((v: any) => v.stock === 0);
+  }
+
+  /** Selected size out of stock hai */
+  get isSelectedOutOfStock(): boolean {
+    if (this.selectedVariant) return this.selectedVariant.stock === 0;
+    return this.isFullyOutOfStock;
+  }
+
+  get stockLabel(): string {
+    if (!this.selectedVariant) return '';
+    if (this.selectedVariant.stock === 0) return 'Sold Out';
+    if (this.selectedVariant.stock <= 5)  return `Only ${this.selectedVariant.stock} left!`;
+    return `${this.selectedVariant.stock} available`;
+  }
+
+  get stockClass(): string {
+    if (!this.selectedVariant) return '';
+    if (this.selectedVariant.stock === 0) return 'out-stock';
+    if (this.selectedVariant.stock <= 5)  return 'low-stock';
+    return 'in-stock';
+  }
+
+  // ─────────────────────────────────────────────
   // SELECTORS
   // ─────────────────────────────────────────────
 
-  selectSize(size: string): void   { this.selectedSize  = size;  }
+  selectSize(size: string): void {
+    this.selectedSize = size;
+    this.qty = 1; // reset qty on size change
+  }
+
   selectColor(color: string): void { this.selectedColor = color; }
 
   incrementQty(): void {
-    if (this.product && this.qty < (this.product as any).stock) this.qty++;
+    if (this.qty < this.currentStock) this.qty++;
   }
   decrementQty(): void {
     if (this.qty > 1) this.qty--;
   }
 
   // ─────────────────────────────────────────────
-  // CART (placeholder — CartService baad mein add karna)
+  // CART
   // ─────────────────────────────────────────────
 
   addToCart(): void {
     if (!this.product) return;
     console.log('Add to cart:', {
-      productId: (this.product as any).id,
-      name:      (this.product as any).name,
-      price:     (this.product as any).price,
+      productId: this.product.id,
+      variantId: this.selectedVariant?.id,
+      name:      this.product.name,
+      price:     this.selectedVariant?.price,
       qty:       this.qty,
       size:      this.selectedSize,
-      color:     this.selectedColor,
     });
     this.addedToCart = true;
     setTimeout(() => (this.addedToCart = false), 2500);
@@ -198,6 +264,14 @@ export class ProductDetail implements OnInit {
     const p = this.product as any;
     if (!p?.originalPrice || !p?.price) return 0;
     return Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+  }
+
+  getVariantPriceRange(variants: any[]): string {
+    if (!variants?.length) return '';
+    const prices = variants.map(v => v.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return min === max ? `₹${min}` : `₹${min} – ₹${max}`;
   }
 
   private checkIfNew(product: any): void {

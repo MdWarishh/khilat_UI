@@ -1,0 +1,251 @@
+<!-- order-detail.component.html -->
+<div class="od-page">
+
+  <!-- Loading -->
+  <div class="od-loading" *ngIf="loading">
+    <div class="od-spinner"></div>
+    <p>Loading order details...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="od-error" *ngIf="!loading && error">
+    <div class="od-error-icon">⚠️</div>
+    <h3>{{ error }}</h3>
+    <button class="od-back-btn" (click)="goBack()">← Back to Orders</button>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!loading && !error && order">
+
+    <!-- ── TOP NAV ── -->
+    <div class="od-topnav">
+      <button class="od-back-btn" (click)="goBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Back to Orders
+      </button>
+      <div class="od-breadcrumb">
+        <span>Orders</span>
+        <span class="od-bc-sep">›</span>
+        <span class="od-bc-current">#{{ order.id }}</span>
+      </div>
+    </div>
+
+    <!-- ── PAGE HEADER ── -->
+    <div class="od-header">
+      <div class="od-header-left">
+        <h1 class="od-order-id">Order <em>#{{ order.id }}</em></h1>
+        <span class="od-date">{{ order.createdAt | date:'dd MMM yyyy, h:mm a' }}</span>
+      </div>
+
+      <div class="od-header-right">
+
+        <!-- ── STATUS DROPDOWN ── -->
+        <div class="od-status-wrap">
+          <select
+            class="od-status-select"
+            [ngClass]="'ss-' + order.status"
+            [(ngModel)]="selectedStatus"
+            (change)="onStatusChange()"
+            [disabled]="statusUpdating || actionLoading">
+            <option *ngFor="let s of allStatuses" [value]="s">{{ s }}</option>
+          </select>
+          <span class="od-status-saving" *ngIf="statusUpdating">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 class="od-spin-icon"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+            Saving...
+          </span>
+          <span class="od-status-saved" *ngIf="statusSuccess">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Saved!
+          </span>
+        </div>
+
+        <!-- Dispatch button (only for PENDING / CONFIRMED) -->
+        <button class="od-action-btn od-dispatch"
+                *ngIf="order.status === 'PENDING' || order.status === 'CONFIRMED'"
+                (click)="dispatchOrder()"
+                [disabled]="actionLoading || statusUpdating">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          {{ actionLoading ? 'Dispatching...' : 'Dispatch' }}
+        </button>
+
+        <!-- Dispatched indicator -->
+        <span class="od-dispatched-ok" *ngIf="order.status === 'DISPATCHED'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Dispatched
+        </span>
+
+        <!-- Cancel button -->
+        <button class="od-action-btn od-cancel"
+                *ngIf="order.status !== 'CANCELLED' && order.status !== 'DELIVERED'"
+                (click)="cancelOrder()"
+                [disabled]="actionLoading || statusUpdating">
+          Cancel Order
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ── ACTION ERROR ── -->
+    <div class="od-action-error" *ngIf="actionError">
+      ⚠ {{ actionError }}
+      <button (click)="actionError = ''">✕</button>
+    </div>
+
+    <!-- ── MAIN GRID ── -->
+    <div class="od-grid">
+
+      <!-- ─── LEFT COLUMN ─── -->
+      <div class="od-col-left">
+
+        <!-- Items Card -->
+        <div class="od-card">
+          <div class="od-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+            </svg>
+            <h3>Ordered Items</h3>
+            <span class="od-item-count">{{ order.orderItems?.length || 0 }} items</span>
+          </div>
+
+          <div class="od-items">
+            <div class="od-item"
+                 *ngFor="let item of order.orderItems; let i = index"
+                 [style.animation-delay]="(i * 0.06) + 's'">
+              <div class="od-item-img">
+                <img *ngIf="item.imageUrl"
+                     [src]="resolveImage(item.imageUrl)"
+                     [alt]="item.productName"
+                     onerror="this.onerror=null;this.style.display='none'">
+                <span *ngIf="!item.imageUrl" class="od-item-fallback">👗</span>
+              </div>
+              <div class="od-item-info">
+                <span class="od-item-name">{{ item.productName }}</span>
+                <span class="od-item-meta">₹{{ item.price }} × {{ item.quantity }}</span>
+              </div>
+              <div class="od-item-total">₹{{ item.price * item.quantity | number:'1.0-0' }}</div>
+            </div>
+          </div>
+
+          <!-- Price breakdown -->
+          <div class="od-price-box">
+            <div class="od-price-row">
+              <span>Subtotal</span>
+              <span>₹{{ getSubtotal() | number:'1.0-0' }}</span>
+            </div>
+            <div class="od-price-row">
+              <span>Shipping</span>
+              <span class="od-free" *ngIf="order.shippingCharge === 0">FREE</span>
+              <span *ngIf="order.shippingCharge > 0">₹{{ order.shippingCharge }}</span>
+            </div>
+            <div class="od-price-divider"></div>
+            <div class="od-price-row od-total-row">
+              <span>Total</span>
+              <span class="od-total-val">₹{{ order.totalAmount | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Card -->
+        <div class="od-card">
+          <div class="od-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <h3>Order Timeline</h3>
+          </div>
+          <div class="od-timeline">
+            <div *ngFor="let step of timeline"
+                 class="od-tl-step"
+                 [class.tl-done]="step.done"
+                 [class.tl-current]="step.current">
+              <div class="od-tl-dot"></div>
+              <div class="od-tl-info">
+                <span class="od-tl-label">{{ step.label }}</span>
+                <span class="od-tl-sub" *ngIf="step.current">Current status</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── RIGHT COLUMN ─── -->
+      <div class="od-col-right">
+
+        <!-- Customer Card -->
+        <div class="od-card">
+          <div class="od-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <h3>Customer</h3>
+          </div>
+          <div class="od-info-list">
+            <div class="od-info-row">
+              <span class="od-info-lbl">Name</span>
+              <span class="od-info-val">{{ order.customerName }}</span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Email</span>
+              <span class="od-info-val">{{ order.customerEmail || '—' }}</span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Phone</span>
+              <span class="od-info-val">{{ order.customerPhone || '—' }}</span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Guest ID</span>
+              <span class="od-info-val od-mono">{{ order.guestId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Card -->
+        <div class="od-card">
+          <div class="od-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <h3>Shipping Address</h3>
+          </div>
+          <div class="od-address">{{ order.address }}</div>
+        </div>
+
+        <!-- Payment Card -->
+        <div class="od-card">
+          <div class="od-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            <h3>Payment</h3>
+          </div>
+          <div class="od-info-list">
+            <div class="od-info-row">
+              <span class="od-info-lbl">Method</span>
+              <span class="od-info-val">{{ order.paymentMethod || 'Stripe' }}</span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Order Date</span>
+              <span class="od-info-val">{{ order.createdAt | date:'dd MMM yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+</div>

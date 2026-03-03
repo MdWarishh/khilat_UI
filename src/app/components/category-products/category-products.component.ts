@@ -5,10 +5,18 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environments';
+import { ProductCardComponent } from '../home/shared/product-card/product-card.component';
 
 interface ProductImage {
   id: number;
   imageUrl: string;
+}
+
+interface Variant {
+  id: number;
+  size: string;
+  price: number;
+  stock: number;
 }
 
 interface Product {
@@ -20,6 +28,7 @@ interface Product {
   trending: string;
   isActive: boolean;
   productImages: ProductImage[];
+  variants: Variant[];
   category: { id: number; name: string; description: string };
 }
 
@@ -36,7 +45,7 @@ interface ApiResponse {
 @Component({
   selector: 'app-category-products',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ProductCardComponent],
   templateUrl: './category-products.component.html',
   styleUrl: './category-products.component.css',
 })
@@ -48,7 +57,7 @@ export class CategoryProductsComponent implements OnInit, OnDestroy {
 
   categoryName = '';
   categoryId   = 0;
-  products: Product[] = [];
+  products: any[] = [];
   loading      = true;
   error        = false;
 
@@ -80,8 +89,9 @@ export class CategoryProductsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loading = true;
-    this.error   = false;
+    this.loading  = true;
+    this.error    = false;
+    this.products = [];
 
     const url = `${environment.apiUrl}/product/getallproducts`
       + `?category=${encodeURIComponent(this.categoryName)}`
@@ -92,7 +102,24 @@ export class CategoryProductsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy))
       .subscribe({
         next: (res) => {
-          this.products   = res.content;
+          // ProductCardComponent ke format mein map karo
+          this.products = res.content.map(p => ({
+            id:          p.id,
+            name:        p.name,
+            description: p.description,
+            price:       p.price,
+            stock:       p.stock,
+            trending:    p.trending,
+            isActive:    p.isActive,
+            // ProductCard expects image as array of URLs
+            image: p.productImages?.map(img =>
+              img.imageUrl.startsWith('http')
+                ? img.imageUrl
+                : `${environment.imageBaseUrl}${img.imageUrl}`
+            ) ?? [],
+            variants:  p.variants ?? [],
+            category:  p.category,
+          }));
           this.totalPages = res.totalPages;
           this.totalItems = res.totalElements;
           this.loading    = false;
@@ -104,6 +131,22 @@ export class CategoryProductsComponent implements OnInit, OnDestroy {
       });
   }
 
+  onProductClick(productId: number): void {
+    this.router.navigate(['/products', productId]);
+  }
+
+  getBadgeLabel(product: any): string {
+    if (product.trending === 'y') return '🔥 Trending';
+    if (product.stock === 0)      return 'Sold Out';
+    if (product.stock <= 5)       return 'Low Stock';
+    return '';
+  }
+
+  getBadgeClass(product: any): string {
+    if (product.trending === 'y') return 'badge-trending';
+    return 'badge-new';
+  }
+
   goToPage(page: number): void {
     if (page < 0 || page >= this.totalPages) return;
     this.currentPage = page;
@@ -113,16 +156,6 @@ export class CategoryProductsComponent implements OnInit, OnDestroy {
 
   getPageNumbers(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i);
-  }
-
-  getFirstImage(product: Product): string {
-    const imgUrl = product.productImages?.[0]?.imageUrl;
-    if (!imgUrl) return '';
-    // Already full URL hai (http/https) — seedha return karo
-    if (imgUrl.startsWith('http')) return imgUrl;
-    // Relative path hai (uploads/...) — baseUrl use karo, apiUrl nahi
-    // baseUrl = http://localhost:8080 (bina /api ke)
-    return `${environment.imageBaseUrl}${imgUrl}`;
   }
 
   goBack(): void {

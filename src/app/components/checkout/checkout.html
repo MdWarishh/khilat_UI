@@ -105,7 +105,6 @@
             <h2>Secure Payment</h2>
           </div>
 
-          <!-- Shipping summary (read-only) -->
           <div class="address-summary">
             <div class="address-icon">📦</div>
             <div>
@@ -116,7 +115,6 @@
             </div>
           </div>
 
-          <!-- Stripe Payment Element mounts here -->
           <div id="stripe-payment-element" class="stripe-element-wrapper">
             <div class="stripe-loading" *ngIf="!stripeReady">
               <span class="spinner"></span> Loading payment form...
@@ -127,9 +125,7 @@
 
           <button class="btn-proceed btn-pay" (click)="confirmPayment()"
                   [disabled]="stripeLoading || !stripeReady">
-            <span *ngIf="!stripeLoading">
-              🔒 Pay ₹{{ total }}
-            </span>
+            <span *ngIf="!stripeLoading">🔒 Pay ₹{{ total }}</span>
             <span *ngIf="stripeLoading" class="loading-text">
               <span class="spinner"></span> Processing payment...
             </span>
@@ -149,9 +145,11 @@
         <div class="items-list">
           <div class="summary-item" *ngFor="let item of cartItems">
             <div class="item-info">
-              <span class="item-name">{{ getProductName(item) }}</span>
-              <span class="item-qty">Qty: {{ getProductQty(item) }} · Size: {{ item.variant.size }}</span>
+              <!-- ✅ flat fields: productName, size -->
+              <span class="item-name">{{ item.productName }}</span>
+              <span class="item-qty">Qty: {{ item.quantity }} · Size: {{ item.size }}</span>
             </div>
+            <!-- ✅ currentPrice instead of price -->
             <span class="item-price">₹{{ getItemTotal(item) }}</span>
           </div>
         </div>

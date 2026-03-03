@@ -33,6 +33,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/category-products/category-products.component').then(m => m.CategoryProductsComponent),
   },
   {
+    path: 'products',
+    loadComponent: () => import('./components/all-products/all-products.component').then(m => m.AllProductsComponent),
+  },
+  {
     path: 'products/:id',
     loadComponent: () => import('./components/product-detail/product-detail').then(m => m.ProductDetail),
   },
@@ -73,6 +77,7 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/products/products.component').then(m => m.AdminProductsComponent),
       },
        { path: 'orders',    loadComponent: () => import('./admin/orders/orders.component').then(m => m.AdminOrdersComponent) },
+       { path: 'orders/:id',    loadComponent: () => import('./admin/order-detail/order-detail.component').then(m => m.OrderDetailComponent) },
       {
         path: '',
         redirectTo: 'dashboard',

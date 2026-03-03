@@ -22,7 +22,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--dark); }
+body { font-family: 'DM Sans', sans-serif; background:  #FFFFFF; color:  #1C1C1C; }
 
 /* =============================================
    CONTAINER
@@ -46,16 +46,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 
 .skel-gallery { display: flex; flex-direction: column; gap: 1rem; }
-.skel-main-img { height: 540px; border-radius: var(--radius-lg); }
+.skel-main-img { height: 540px; border-radius:  24px; }
 .skel-thumbs { display: flex; gap: 10px; }
-.skel-thumb { width: 80px; height: 80px; border-radius: var(--radius-md); flex-shrink: 0; }
+.skel-thumb { width: 80px; height: 80px; border-radius: var 14px; flex-shrink: 0; }
 .skel-info { display: flex; flex-direction: column; gap: 16px; padding-top: 1rem; }
-.skel-line { height: 16px; border-radius: 6px; background: var(--blush); }
+.skel-line { height: 16px; border-radius: 6px; background:    #FFE3E1; }
 .w-30 { width: 30%; } .w-40 { width: 40%; } .w-50 { width: 50%; }
 .w-70 { width: 70%; } .w-80 { width: 80%; } .w-90 { width: 90%; }
 
 .shimmer {
-  background: linear-gradient(90deg, var(--blush) 25%, var(--rose) 50%, var(--blush) 75%);
+  background: linear-gradient(90deg,    #FFE3E1 25%,  #FFD1D1 50%,    #FFE3E1 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite;
 }
@@ -79,15 +79,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 .pd-error h2 {
   font-family: 'Cormorant Garamond', serif;
   font-size: 2rem;
-  color: var(--dark);
+  color:  #1C1C1C;
 }
-.pd-error p { color: var(--light-mid); font-size: 1rem; }
+.pd-error p { color:  #9A8A8A; font-size: 1rem; }
 .btn-back {
   margin-top: 1rem;
   display: inline-flex;
   align-items: center;
   padding: 12px 28px;
-  background: var(--dark);
+  background:  #1C1C1C;
   color: white;
   border-radius: 30px;
   text-decoration: none;
@@ -95,7 +95,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 500;
   transition: all 0.3s ease;
 }
-.btn-back:hover { background: var(--pink-dark); }
+.btn-back:hover { background: #e87575; }
 
 /* =============================================
    PAGE REVEAL
@@ -114,7 +114,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
    BREADCRUMB
    ============================================= */
 .breadcrumb-bar {
-  background: var(--cream);
+  background:  #FFF5E4;
   border-bottom: 1px solid rgba(255,148,148,0.12);
   padding: 14px 0;
 }
@@ -126,13 +126,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 .bc-link {
   font-size: 0.8rem;
-  color: var(--light-mid);
+  color:  #9A8A8A;
   text-decoration: none;
   transition: color 0.2s ease;
 }
-.bc-link:hover { color: var(--pink-dark); }
-.bc-sep { font-size: 0.75rem; color: var(--rose); }
-.bc-current { font-size: 0.8rem; color: var(--dark); font-weight: 500; }
+.bc-link:hover { color: #e87575; }
+.bc-sep { font-size: 0.75rem; color:  #FFD1D1; }
+.bc-current { font-size: 0.8rem; color:  #1C1C1C; font-weight: 500; }
 
 /* =============================================
    MAIN PRODUCT GRID
@@ -155,9 +155,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 /* Main Image */
 .main-img-wrap {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius:  24px;
   overflow: hidden;
-  background: var(--cream);
+  background:  #FFF5E4;
   aspect-ratio: 4/5;
 }
 .main-img-wrap.img-error {
@@ -165,7 +165,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  background: var(--blush);
+  background:    #FFE3E1;
 }
 
 .main-img-inner {
@@ -200,7 +200,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--dark);
+  color:  #1C1C1C;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   transition: all 0.25s ease;
   backdrop-filter: blur(8px);
@@ -208,7 +208,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 .img-nav.prev { left: 14px; }
 .img-nav.next { right: 14px; }
-.img-nav:hover { background: var(--white); transform: translateY(-50%) scale(1.08); }
+.img-nav:hover { background:  #FFFFFF; transform: translateY(-50%) scale(1.08); }
 
 /* Stock badge on image */
 .img-stock-badge {
@@ -224,6 +224,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 .img-stock-badge.out { background: rgba(239,68,68,0.9); color: white; }
 .img-stock-badge.in  { background: rgba(255,148,148,0.9); color: white; }
+.img-stock-badge.low { background: rgba(234,138,0,0.9); color: white; }
 
 /* Thumbnails */
 .thumbnails {
@@ -234,17 +235,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 .thumb-btn {
   width: 80px;
   height: 80px;
-  border-radius: var(--radius-md);
+  border-radius: var 14px;
   overflow: hidden;
   border: 2px solid transparent;
   cursor: pointer;
   padding: 0;
-  background: var(--cream);
+  background:  #FFF5E4;
   transition: all 0.25s ease;
   flex-shrink: 0;
 }
 .thumb-btn.active {
-  border-color: var(--pink);
+  border-color:  #FF9494;
   box-shadow: 0 4px 14px rgba(255,148,148,0.3);
 }
 .thumb-btn img {
@@ -253,7 +254,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   object-fit: cover;
 }
 .thumb-btn.thumb-error {
-  background: var(--blush);
+  background:    #FFE3E1;
 }
 
 /* =============================================
@@ -279,7 +280,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--pink-dark);
+  color: #e87575;
 }
 
 .info-badge {
@@ -289,7 +290,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   border-radius: 20px;
   letter-spacing: 0.5px;
 }
-.info-badge.new      { background: rgba(255,148,148,0.12); color: var(--pink-dark); }
+.info-badge.new      { background: rgba(255,148,148,0.12); color: #e87575; }
 .info-badge.trending { background: rgba(255,200,0,0.12);   color: #c0392b; }
 
 .product-title {
@@ -297,7 +298,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-size: clamp(2rem, 3.5vw, 2.8rem);
   font-weight: 600;
   line-height: 1.15;
-  color: var(--dark);
+  color:  #1C1C1C;
   margin-bottom: 1.25rem;
 }
 
@@ -313,11 +314,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-family: 'Cormorant Garamond', serif;
   font-size: 2.2rem;
   font-weight: 600;
-  color: var(--dark);
+  color:  #1C1C1C;
 }
 .price-original {
   font-size: 1.1rem;
-  color: var(--light-mid);
+  color:  #9A8A8A;
   text-decoration: line-through;
 }
 .price-off {
@@ -337,9 +338,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   margin-bottom: 1.5rem;
 }
 .stars { display: flex; gap: 2px; }
-.star { font-size: 1rem; color: var(--rose); }
+.star { font-size: 1rem; color:  #FFD1D1; }
 .star.filled { color: #f59e0b; }
-.rating-count { font-size: 0.82rem; color: var(--light-mid); }
+.rating-count { font-size: 0.82rem; color:  #9A8A8A; }
 
 .info-divider {
   height: 1px;
@@ -350,7 +351,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 /* Description */
 .product-desc {
   font-size: 0.92rem;
-  color: var(--mid);
+  color:  #5A4A4A;
   line-height: 1.8;
   margin-bottom: 1.5rem;
 }
@@ -365,7 +366,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--dark);
+  color:  #1C1C1C;
   margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
@@ -376,7 +377,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--pink-dark);
+  color: #e87575;
   background: rgba(255,148,148,0.1);
   padding: 2px 10px;
   border-radius: 10px;
@@ -390,19 +391,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   padding: 0 14px;
   border: 1.5px solid rgba(90,74,74,0.2);
   border-radius: var(--radius-sm);
-  background: var(--white);
-  color: var(--mid);
+  background:  #FFFFFF;
+  color:  #5A4A4A;
   font-size: 0.85rem;
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   transition: all 0.25s ease;
 }
-.size-btn:hover { border-color: var(--pink); color: var(--dark); }
+.size-btn:hover { border-color:  #FF9494; color:  #1C1C1C; }
 .size-btn.selected {
-  background: var(--dark);
-  border-color: var(--dark);
-  color: var(--white);
+  background:  #1C1C1C;
+  border-color:  #1C1C1C;
+  color:  #FFFFFF;
 }
 
 /* Color */
@@ -420,7 +421,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 .color-btn.selected {
-  border-color: var(--dark);
+  border-color:  #1C1C1C;
   transform: scale(1.15);
   box-shadow: 0 4px 14px rgba(0,0,0,0.2);
 }
@@ -436,8 +437,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   width: 42px;
   height: 42px;
   border: 1.5px solid rgba(90,74,74,0.2);
-  background: var(--white);
-  color: var(--dark);
+  background:  #FFFFFF;
+  color:  #1C1C1C;
   font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -448,7 +449,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 .qty-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
 .qty-btn:last-of-type { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.qty-btn:hover:not(:disabled) { background: var(--cream); border-color: var(--pink); }
+.qty-btn:hover:not(:disabled) { background:  #FFF5E4; border-color:  #FF9494; }
 .qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .qty-val {
   width: 54px;
@@ -460,12 +461,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   justify-content: center;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--dark);
+  color:  #1C1C1C;
 }
 .qty-stock {
   margin-left: 14px;
   font-size: 0.75rem;
-  color: var(--light-mid);
+  color:  #9A8A8A;
 }
 
 /* =============================================
@@ -486,8 +487,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--dark);
-  color: var(--white);
+  background:  #1C1C1C;
+  color:  #FFFFFF;
   border: none;
   border-radius: 30px;
   font-size: 0.92rem;
@@ -498,7 +499,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   letter-spacing: 0.3px;
 }
 .btn-add-cart:hover {
-  background: var(--mid);
+  background:  #5A4A4A;
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(28,28,28,0.25);
 }
@@ -518,8 +519,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--pink);
-  color: var(--white);
+  background:  #FF9494;
+  color:  #FFFFFF;
   border-radius: 30px;
   text-decoration: none;
   font-size: 0.92rem;
@@ -529,7 +530,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   box-shadow: 0 6px 20px rgba(255,148,148,0.35);
 }
 .btn-buy-now:hover {
-  background: var(--pink-dark);
+  background: #e87575;
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(255,100,100,0.4);
   color: white;
@@ -539,7 +540,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   padding: 16px 20px;
   background: rgba(239,68,68,0.06);
   border: 1px solid rgba(239,68,68,0.15);
-  border-radius: var(--radius-md);
+  border-radius: var 14px;
   color: #dc2626;
   font-size: 0.9rem;
   margin-bottom: 1.75rem;
@@ -561,7 +562,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   align-items: center;
   gap: 7px;
   font-size: 0.78rem;
-  color: var(--mid);
+  color:  #5A4A4A;
 }
 .perk-icon { font-size: 1rem; }
 
@@ -569,7 +570,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
    RELATED PRODUCTS
    ============================================= */
 .related-section {
-  background: var(--cream);
+  background:  #FFF5E4;
   padding: 80px 0 100px;
 }
 
@@ -583,16 +584,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 500;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--pink-dark);
+  color: #e87575;
   margin-bottom: 0.6rem;
 }
 .related-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2rem, 3.5vw, 2.8rem);
   font-weight: 600;
-  color: var(--dark);
+  color:  #1C1C1C;
 }
-.related-title em { font-style: italic; color: var(--pink-dark); }
+.related-title em { font-style: italic; color: #e87575; }
 
 .related-grid {
   display: grid;
@@ -601,8 +602,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 }
 
 .related-card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
+  background:  #FFFFFF;
+  border-radius:  24px;
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(255,148,148,0.1);
@@ -622,7 +623,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 .related-img-wrap {
   position: relative;
   overflow: hidden;
-  background: var(--cream);
+  background:  #FFF5E4;
   aspect-ratio: 3/4;
 }
 .related-img {
@@ -646,8 +647,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
 .related-card:hover .related-overlay { opacity: 1; }
 .related-overlay span {
   padding: 9px 22px;
-  background: var(--white);
-  color: var(--dark);
+  background:  #FFFFFF;
+  color:  #1C1C1C;
   font-size: 0.8rem;
   font-weight: 600;
   border-radius: 24px;
@@ -662,21 +663,21 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--pink-dark);
+  color: #e87575;
   margin-bottom: 4px;
 }
 .related-name {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--dark);
+  color:  #1C1C1C;
   margin-bottom: 6px;
   line-height: 1.3;
 }
 .related-price {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--dark);
+  color:  #1C1C1C;
   font-family: 'Cormorant Garamond', serif;
 }
 
@@ -704,4 +705,53 @@ body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(
   .related-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .perks-row { flex-direction: column; gap: 0.75rem; }
   .main-img-wrap { aspect-ratio: 1/1; }
+}
+/* =============================================
+   VARIANTS — OOS SIZE, STOCK TAGS (added)
+   ============================================= */
+
+/* Out-of-stock size button */
+.size-btn.oos-size {
+  opacity: 0.4;
+  cursor: not-allowed;
+  position: relative;
+  text-decoration: line-through;
+}
+.size-btn.oos-size:hover {
+  border-color: #ddd;
+  color:  #9A8A8A;
+}
+
+/* Stock tag */
+.stock-tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.stock-tag.in-stock  { background: #e6f9ec; color: #2d8a4e; }
+.stock-tag.low-stock { background: #fff4e0; color: #c87a00; }
+.stock-tag.out-stock { background: #fde8e8; color: #c0392b; }
+
+/* Stock status row below price */
+.stock-status-row {
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Size hint text */
+.size-hint {
+  font-size: 0.8rem;
+  color: #e87575;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Disabled add-to-cart (no size selected) */
+.btn-add-cart:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: all;
 }

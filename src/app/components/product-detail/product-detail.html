@@ -77,8 +77,10 @@
           </button>
 
           <!-- Stock badge on image -->
-          <div class="img-stock-badge out" *ngIf="product.stock === 0">Sold Out</div>
-          <div class="img-stock-badge in" *ngIf="product.stock > 0 && product.stock <= 5">Only {{ product.stock }} left!</div>
+          <div class="img-stock-badge out" *ngIf="isFullyOutOfStock">Out of Stock</div>
+          <div class="img-stock-badge low" *ngIf="!isFullyOutOfStock && selectedSize && currentStock > 0 && currentStock <= 5">
+            Only {{ currentStock }} left!
+          </div>
         </div>
 
         <!-- Thumbnails -->
@@ -102,27 +104,23 @@
         <div class="info-top-row">
           <span class="info-category" *ngIf="product.category">{{ product.category.name }}</span>
           <span class="info-badge new" *ngIf="isNew">New Arrival</span>
-          <span class="info-badge trending" *ngIf="product.trending">🔥 Trending</span>
+          <span class="info-badge trending" *ngIf="product.trending === 'Y'">🔥 Trending</span>
         </div>
 
         <!-- Product Name -->
         <h1 class="product-title">{{ product.name }}</h1>
 
-        <!-- Price -->
+        <!-- Price — selectedVariant se, ya range -->
         <div class="price-row">
-          <span class="price-main">₹{{ product.price }}</span>
-          <!-- <span class="price-original" *ngIf="product?.originalPrice">₹{{ product?.originalPrice }}</span> -->
+          <span class="price-main">{{ displayPrice }}</span>
           <span class="price-off" *ngIf="product.originalPrice">
             {{ getDiscount() }}% OFF
           </span>
         </div>
 
-        <!-- Rating placeholder -->
-        <div class="rating-row">
-          <div class="stars">
-            <span *ngFor="let s of [1,2,3,4,5]" class="star" [class.filled]="s <= 4">★</span>
-          </div>
-          <span class="rating-count">4.0 · 120 reviews</span>
+        <!-- Stock label (size select hone ke baad) -->
+        <div class="stock-status-row" *ngIf="selectedSize">
+          <span class="stock-tag" [ngClass]="stockClass">{{ stockLabel }}</span>
         </div>
 
         <div class="info-divider"></div>
@@ -130,7 +128,7 @@
         <!-- Description -->
         <p class="product-desc" *ngIf="product.description">{{ product.description }}</p>
 
-        <!-- Size Selector -->
+        <!-- Size Selector — API variants se -->
         <div class="selector-group" *ngIf="sizes.length > 0">
           <div class="selector-label">
             Size
@@ -138,61 +136,58 @@
           </div>
           <div class="size-options">
             <button
-              *ngFor="let size of sizes"
+              *ngFor="let variant of product.variants"
               class="size-btn"
-              [class.selected]="selectedSize === size"
-              (click)="selectSize(size)">
-              {{ size }}
+              [class.selected]="selectedSize === variant.size"
+              [class.oos-size]="variant.stock === 0"
+              [disabled]="variant.stock === 0"
+              [title]="variant.stock === 0 ? 'Out of stock' : ''"
+              (click)="selectSize(variant.size)">
+              {{ variant.size }}
+              <span class="size-oos-line" *ngIf="variant.stock === 0"></span>
             </button>
           </div>
-        </div>
-
-        <!-- Color Selector -->
-        <div class="selector-group" *ngIf="colors.length > 0">
-          <div class="selector-label">
-            Color
-            <span class="selected-val">{{ selectedColor || 'Select' }}</span>
-          </div>
-          <div class="color-options">
-            <button
-              *ngFor="let color of colors"
-              class="color-btn"
-              [class.selected]="selectedColor === color.name"
-              [style.background]="color.hex"
-              [title]="color.name"
-              (click)="selectColor(color.name)">
-              <span class="color-check" *ngIf="selectedColor === color.name">✓</span>
-            </button>
-          </div>
+          <!-- Size hint -->
+          <p class="size-hint" *ngIf="!selectedSize">Please select a size to continue</p>
         </div>
 
         <!-- Quantity Selector -->
-        <div class="selector-group">
+        <div class="selector-group" *ngIf="!isFullyOutOfStock">
           <div class="selector-label">Quantity</div>
           <div class="qty-control">
             <button class="qty-btn" (click)="decrementQty()" [disabled]="qty <= 1">−</button>
             <span class="qty-val">{{ qty }}</span>
-            <button class="qty-btn" (click)="incrementQty()" [disabled]="qty >= product.stock">+</button>
-            <span class="qty-stock" *ngIf="product.stock > 0">{{ product.stock }} available</span>
+            <button class="qty-btn" (click)="incrementQty()" [disabled]="qty >= currentStock">+</button>
+            <span class="qty-stock" *ngIf="currentStock > 0">{{ currentStock }} available</span>
           </div>
         </div>
 
         <div class="info-divider"></div>
 
-        <!-- CTA Buttons -->
-        <div class="cta-group" *ngIf="product.stock > 0">
-          <button class="btn-add-cart" (click)="addToCart()" [class.added]="addedToCart">
+        <!-- CTA Buttons — in stock aur size select ho -->
+        <div class="cta-group" *ngIf="!isFullyOutOfStock && !isSelectedOutOfStock">
+          <button
+            class="btn-add-cart"
+            (click)="addToCart()"
+            [class.added]="addedToCart"
+            [disabled]="!selectedSize">
             <span *ngIf="!addedToCart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-              Add to Cart
+              {{ selectedSize ? 'Add to Cart' : 'Select Size First' }}
             </span>
             <span *ngIf="addedToCart">✓ Added to Cart!</span>
           </button>
-          <a routerLink="/cart" class="btn-buy-now">Buy Now</a>
+          <a routerLink="/cart" class="btn-buy-now" *ngIf="selectedSize">Buy Now</a>
         </div>
 
-        <div class="out-of-stock-msg" *ngIf="product.stock === 0">
+        <!-- Out of stock message -->
+        <div class="out-of-stock-msg" *ngIf="isFullyOutOfStock">
           <span>😔 This item is currently out of stock</span>
+        </div>
+
+        <!-- Selected size is OOS but product has other sizes -->
+        <div class="out-of-stock-msg" *ngIf="!isFullyOutOfStock && isSelectedOutOfStock && selectedSize">
+          <span>😔 This size is out of stock — try another size</span>
         </div>
 
         <!-- Perks -->
@@ -239,7 +234,10 @@
           <div class="related-info">
             <span class="related-cat" *ngIf="p.category">{{ p.category.name }}</span>
             <h4 class="related-name">{{ p.name }}</h4>
-            <span class="related-price">₹{{ p.price }}</span>
+            <!-- Price range from variants -->
+            <span class="related-price" *ngIf="p.variants?.length">
+              {{ getVariantPriceRange(p.variants) }}
+            </span>
           </div>
         </div>
       </div>

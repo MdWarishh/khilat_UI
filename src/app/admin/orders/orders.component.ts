@@ -2,21 +2,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule }      from '@angular/common';
 import { FormsModule }       from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment }       from '../../../environments/environments';
 
-// ── Matches actual backend OrderSummaryDto response ──────────────
 export interface OrderSummaryDto {
-  orderId:       number;    // ✅ backend "orderId"
-  name:          string;    // ✅ backend "name"
+  orderId:       number;
+  name:          string;
   phone:         number | null;
-  amount:        number;    // ✅ backend "amount"
+  amount:        number;
   paymentStatus: string;
-  orderStatus:   string;    // ✅ backend "orderStatus"
+  orderStatus:   string;
   createdAt:     string;
 }
 
-// ── Matches backend OrderDto (detail view) ────────────────────────
 export interface OrderItemDto {
   productId:   number;
   productName: string;
@@ -40,7 +39,6 @@ export interface OrderDto {
   orderItems:     OrderItemDto[];
 }
 
-// ── Spring Page wrapper ───────────────────────────────────────────
 interface PageResponse<T> {
   content:       T[];
   totalElements: number;
@@ -62,32 +60,30 @@ interface TimelineStep { label: string; done: boolean; current: boolean; }
 })
 export class AdminOrdersComponent implements OnInit {
 
-  // ── Data ──────────────────────────────────────
   allOrders:      OrderSummaryDto[] = [];
   filteredOrders: OrderSummaryDto[] = [];
   pagedOrders:    OrderSummaryDto[] = [];
 
-  // ── Detail modal ──────────────────────────────
   showDetails    = false;
   selectedOrder: OrderDto | null = null;
   detailLoading  = false;
   detailError    = '';
+  dispatchLoading = false;
 
-  // ── State ──────────────────────────────────────
   loading = true;
   error   = '';
 
-  // ── Filters ────────────────────────────────────
+  // Filters
   searchQuery  = '';
   filterStatus = '';
-  filterDate   = '';
+  // Date range — stored as 'YYYY-MM-DD' strings (HTML date input format)
+  dateFrom = '';
+  dateTo   = '';
 
-  // ── Sort ───────────────────────────────────────
   sortField: 'orderId' | 'amount' | 'createdAt' = 'createdAt';
   sortDir:   'asc' | 'desc'                      = 'desc';
 
-  // ── Pagination (server-side) ──────────────────
-  currentPage   = 0;   // 0-based (Spring)
+  currentPage   = 0;
   pageSize      = 10;
   totalPages    = 1;
   totalElements = 0;
@@ -95,7 +91,6 @@ export class AdminOrdersComponent implements OnInit {
   endIndex      = 0;
   pageNumbers:  number[] = [];
 
-  // ── Status config ──────────────────────────────
   allStatuses: StatusOption[] = [
     { value: 'PENDING',    label: 'Pending'    },
     { value: 'CONFIRMED',  label: 'Confirmed'  },
@@ -106,22 +101,33 @@ export class AdminOrdersComponent implements OnInit {
 
   statusStats: StatusStat[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void { this.loadOrders(); }
 
   // ─────────────────────────────────────────────
-  // LOAD ORDERS (server paginated)
+  // LOAD ORDERS — date param sent to backend
+  // Backend accepts: GET /api/admin/order-pending?page=0&size=10&date=2025-03-01
+  // For date range we send dateFrom as `date` param and filter dateTo client-side
   // ─────────────────────────────────────────────
 
   loadOrders(): void {
     this.loading = true;
     this.error   = '';
 
+    let params = new HttpParams()
+      .set('page', String(this.currentPage))
+      .set('size', String(this.pageSize));
+
+    // Send dateFrom to backend (it filters from that date onwards)
+    if (this.dateFrom) {
+      params = params.set('date', this.dateFrom);
+    }
+
     const auth = this.authHeaders();
     this.http.get<PageResponse<OrderSummaryDto>>(
       `${environment.apiUrl}/admin/order-pending`,
-      { headers: auth.headers, params: { page: String(this.currentPage), size: String(this.pageSize) } }
+      { headers: auth.headers, params }
     ).subscribe({
       next: (res) => {
         this.allOrders     = res.content;
@@ -143,6 +149,22 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   // ─────────────────────────────────────────────
+  // DATE RANGE FILTER HANDLERS
+  // ─────────────────────────────────────────────
+
+  onDateChange(): void {
+    this.currentPage = 0;
+    this.loadOrders();
+  }
+
+  clearDateFilter(): void {
+    this.dateFrom = '';
+    this.dateTo   = '';
+    this.currentPage = 0;
+    this.loadOrders();
+  }
+
+  // ─────────────────────────────────────────────
   // LOAD ORDER DETAIL
   // ─────────────────────────────────────────────
 
@@ -156,13 +178,20 @@ export class AdminOrdersComponent implements OnInit {
       `${environment.apiUrl}/admin/order/${order.orderId}`,
       this.authHeaders()
     ).subscribe({
-      next: (res) => { this.selectedOrder = res; this.detailLoading = false; },
-      error: (err) => { this.detailError = err.error?.message || 'Failed to load details.'; this.detailLoading = false; }
+      next: (res) => {
+        this.selectedOrder = res;
+        this.detailLoading = false;
+      },
+      error: (err) => {
+        this.detailError   = err.error?.message || 'Failed to load order details.';
+        this.detailLoading = false;
+      }
     });
   }
 
   // ─────────────────────────────────────────────
   // CLIENT-SIDE FILTER + SORT
+  // dateTo is applied client-side (backend only supports single date)
   // ─────────────────────────────────────────────
 
   applyFilters(): void {
@@ -171,38 +200,44 @@ export class AdminOrdersComponent implements OnInit {
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       list = list.filter(o =>
-        String(o.orderId).includes(q)          ||
-        o.name?.toLowerCase().includes(q)      ||
+        String(o.orderId).includes(q) ||
+        o.name?.toLowerCase().includes(q) ||
         String(o.phone || '').includes(q)
       );
     }
 
-    if (this.filterStatus) list = list.filter(o => o.orderStatus === this.filterStatus);
+    if (this.filterStatus) {
+      list = list.filter(o => o.orderStatus === this.filterStatus);
+    }
 
-    if (this.filterDate) {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      list = list.filter(o => {
-        const d = new Date(o.createdAt);
-        if (this.filterDate === 'today') return d >= today;
-        if (this.filterDate === 'week')  { const w = new Date(today); w.setDate(w.getDate() - 7); return d >= w; }
-        if (this.filterDate === 'month') { const m = new Date(today); m.setMonth(m.getMonth() - 1); return d >= m; }
-        return true;
-      });
+    // Client-side dateTo filter (upper bound)
+    if (this.dateTo) {
+      const toDate = new Date(this.dateTo);
+      toDate.setHours(23, 59, 59, 999); // include full day
+      list = list.filter(o => new Date(o.createdAt) <= toDate);
     }
 
     list.sort((a, b) => {
       let va: any, vb: any;
-      if (this.sortField === 'orderId')    { va = a.orderId; vb = b.orderId; }
-      if (this.sortField === 'amount')     { va = a.amount;  vb = b.amount; }
-      if (this.sortField === 'createdAt')  { va = new Date(a.createdAt).getTime(); vb = new Date(b.createdAt).getTime(); }
-      return this.sortDir === 'asc' ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+      if (this.sortField === 'orderId')   { va = a.orderId; vb = b.orderId; }
+      if (this.sortField === 'amount')    { va = a.amount;  vb = b.amount; }
+      if (this.sortField === 'createdAt') { va = new Date(a.createdAt).getTime(); vb = new Date(b.createdAt).getTime(); }
+      return this.sortDir === 'asc' ? (va < vb ? -1 : va > vb ? 1 : 0)
+                                    : (va > vb ? -1 : va < vb ? 1 : 0);
     });
 
     this.filteredOrders = list;
     this.pagedOrders    = list;
   }
 
-  clearFilters(): void { this.searchQuery = ''; this.filterStatus = ''; this.filterDate = ''; this.applyFilters(); }
+  clearFilters(): void {
+    this.searchQuery  = '';
+    this.filterStatus = '';
+    this.dateFrom     = '';
+    this.dateTo       = '';
+    this.currentPage  = 0;
+    this.loadOrders();
+  }
 
   sort(field: 'orderId' | 'amount' | 'createdAt'): void {
     this.sortDir   = (this.sortField === field && this.sortDir === 'asc') ? 'desc' : 'asc';
@@ -238,31 +273,51 @@ export class AdminOrdersComponent implements OnInit {
 
   // ─────────────────────────────────────────────
   // DISPATCH ORDER
+  // POST /api/admin/dispatch/{orderId}
+  // Updates status in list + modal immediately
   // ─────────────────────────────────────────────
 
   dispatchOrder(order: OrderSummaryDto | OrderDto): void {
     const id = 'orderId' in order ? order.orderId : order.id;
     if (!confirm(`Mark order #${id} as dispatched?`)) return;
 
-    this.http.post<string>(`${environment.apiUrl}/admin/dispatch/${id}`, {}, this.authHeaders())
-      .subscribe({
-        next: () => {
-          const summary = this.allOrders.find(o => o.orderId === id);
-          if (summary) summary.orderStatus = 'DISPATCHED';
-          if (this.selectedOrder?.id === id) this.selectedOrder.status = 'DISPATCHED';
-          this.applyFilters();
-          this.buildStatusStats();
-        },
-        error: (err) => { this.error = err.error || 'Failed to dispatch order.'; }
-      });
+    this.dispatchLoading = true;
+
+    this.http.post<string>(
+      `${environment.apiUrl}/admin/dispatch/${id}`, {},
+      this.authHeaders()
+    ).subscribe({
+      next: () => {
+        this.dispatchLoading = false;
+
+        // Update in allOrders list
+        const summary = this.allOrders.find(o => o.orderId === id);
+        if (summary) summary.orderStatus = 'DISPATCHED';
+
+        // Update in modal if open
+        if (this.selectedOrder?.id === id) {
+          this.selectedOrder = { ...this.selectedOrder, status: 'DISPATCHED' };
+        }
+
+        this.applyFilters();
+        this.buildStatusStats();
+      },
+      error: (err) => {
+        this.dispatchLoading = false;
+        this.error = err.error || 'Failed to dispatch order.';
+      }
+    });
   }
 
   cancelOrder(order: OrderSummaryDto | OrderDto): void {
     const id = 'orderId' in order ? order.orderId : order.id;
     if (!confirm(`Cancel order #${id}?`)) return;
+
     const summary = this.allOrders.find(o => o.orderId === id);
     if (summary) summary.orderStatus = 'CANCELLED';
-    if (this.selectedOrder?.id === id) this.selectedOrder.status = 'CANCELLED';
+    if (this.selectedOrder?.id === id) {
+      this.selectedOrder = { ...this.selectedOrder, status: 'CANCELLED' };
+    }
     this.applyFilters();
     this.buildStatusStats();
   }
@@ -311,10 +366,19 @@ export class AdminOrdersComponent implements OnInit {
     return (order.totalAmount || 0) - (order.shippingCharge || 0);
   }
 
-  // Page display number (0-based → 1-based for UI)
+  // Resolve relative image URLs
+  resolveImage(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${environment.imageBaseUrl}${url}`;
+  }
+
   displayPage(p: number): number { return p + 1; }
 
-  // ── Auth header ───────────────────────────────────────────────
+  openDetailPage(order: OrderSummaryDto): void {
+    this.router.navigate(['/admin/orders', order.orderId]);
+  }
+
   private authHeaders(): { headers: HttpHeaders } {
     const token = localStorage.getItem('admin_token') || '';
     return { headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }) };

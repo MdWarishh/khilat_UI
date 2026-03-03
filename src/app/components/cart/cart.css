@@ -70,13 +70,34 @@ body { font-family: 'DM Sans', sans-serif; }
 .item-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 
 .item-info { flex: 1; min-width: 0; }
-.item-category { display: block; font-size: 0.68rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #e87575; margin-bottom: 4px; }
 .item-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: #1C1C1C; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-price { font-size: 0.88rem; color: var(--mid); }
+
+/* ── Item meta (size + unit price) ── */
+.item-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 6px; flex-wrap: wrap;
+}
+.item-size-tag {
+  font-size: 0.72rem; font-weight: 600;
+  background: rgba(255,148,148,0.1);
+  color: #e87575;
+  padding: 3px 10px; border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.item-unit-price { font-size: 0.8rem; color: #9A8A8A; }
+
+/* ── Stock warning ── */
+.stock-warning {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 6px;
+  font-weight: 500;
+}
 
 .item-qty { display: flex; align-items: center; border: 1.5px solid rgba(90,74,74,0.18); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
 .qty-btn { width: 36px; height: 36px; border: none; background: var(--cream); color: var(--dark); font-size: 1rem; cursor: pointer; transition: background 0.2s ease; display: flex; align-items: center; justify-content: center; }
 .qty-btn:hover { background: var(--blush); }
+.qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .qty-val { width: 36px; text-align: center; font-size: 0.9rem; font-weight: 600; color: var(--dark); border-left: 1px solid rgba(90,74,74,0.12); border-right: 1px solid rgba(90,74,74,0.12); line-height: 36px; }
 
 .item-total { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; color: var(--dark); min-width: 70px; text-align: right; flex-shrink: 0; }
@@ -107,6 +128,7 @@ body { font-family: 'DM Sans', sans-serif; }
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } .order-summary { position: static; } }
 @media (max-width: 540px) { .cart-item { flex-wrap: wrap; } .cart-container { padding: 1.5rem 1rem; } }
+
 /* ── Loading spinner ── */
 .loading-spinner {
   width: 40px; height: 40px;
@@ -119,18 +141,63 @@ body { font-family: 'DM Sans', sans-serif; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { color: #9A8A8A; font-size: 0.9rem; }
 
-/* ── Item meta (size + unit price) ── */
-.item-meta {
-  display: flex; align-items: center; gap: 10px;
-  margin-top: 6px; flex-wrap: wrap;
+
+/* ── cart.css ke end mein add karo ── */
+.item-error-msg {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 5px 10px;
+  margin-top: 6px;
+  animation: slideIn 0.25s ease both;
 }
-.item-size-tag {
-  font-size: 0.72rem; font-weight: 600;
-  background: rgba(255,148,148,0.1);
-  color: #e87575;
-  padding: 3px 10px; border-radius: 20px;
-  letter-spacing: 0.3px;
+
+
+/* ── cart.css ke end mein add karo ── */
+
+/* Clear confirm inline */
+.clear-wrap { display: flex; align-items: center; }
+.clear-confirm {
+  display: flex; align-items: center; gap: 8px;
+  animation: fadeUp 0.2s ease both;
 }
-.item-unit-price {
-  font-size: 0.8rem; color: #9A8A8A;
+.clear-confirm span {
+  font-size: 0.8rem; color: var(--mid);
+}
+.confirm-yes {
+  font-size: 0.78rem; font-weight: 600;
+  background: #dc2626; color: white;
+  border: none; border-radius: 20px;
+  padding: 6px 14px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.2s ease;
+}
+.confirm-yes:hover { background: #b91c1c; }
+.confirm-no {
+  font-size: 0.78rem; font-weight: 500;
+  background: none; color: var(--light-mid);
+  border: 1px solid rgba(90,74,74,0.2);
+  border-radius: 20px; padding: 6px 14px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s ease;
+}
+.confirm-no:hover { border-color: var(--mid); color: var(--dark); }
+
+/* Per-item error toast */
+.item-error-msg {
+  font-size: 0.72rem; font-weight: 500;
+  color: #dc2626;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px; padding: 5px 10px;
+  margin-top: 6px;
+  animation: slideIn 0.25s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

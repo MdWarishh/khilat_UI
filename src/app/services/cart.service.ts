@@ -1,37 +1,20 @@
 // src/app/services/cart.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environments';
 
-// Backend response ke hisab se sahi interface
-export interface CartVariant {
-  id: number;
-  size: string;
-  price: number;
-  stock: number;
-  product?: {
-    id: number;
-    name: string;
-    description: string;
-    trending: string;
-    isActive: boolean;
-    createdAt: string;
-    productImages: { id: number; imageUrl: string }[];
-    category: { id: number; name: string; description: string | null };
-  };
-}
-
 export interface CartItem {
-  id: number;         // cart item id
-  cart: {
-    id: number;
-    guestId: string;
-    createdAt: string | null;
-  };
-  variant: CartVariant;
+  cartItemId: number;
+  productId: number;
+  variantId: number;
+  productName: string;
+  imageUrl: string;
+  size: string;
   quantity: number;
-  price: number;      // variant price
+  stockAvailable: number;
+  currentPrice: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,96 +26,189 @@ export class CartService {
   private cartSubject = new BehaviorSubject<CartItem[]>([]);
   cart$ = this.cartSubject.asObservable();
 
+  // In-flight API call tracker — prevents race conditions on rapid clicks
+  private pendingCalls = new Map<number, boolean>();
+
   constructor(private http: HttpClient) {}
 
-  // ── Guest ID ──
+  // ── Guest ID ────────────────────────────────────────────────────────────────
+
   getGuestId(): string {
-    let guestId = localStorage.getItem(this.GUEST_KEY);
-    if (!guestId) {
-      guestId = crypto.randomUUID();
-      localStorage.setItem(this.GUEST_KEY, guestId);
+    try {
+      let guestId = localStorage.getItem(this.GUEST_KEY);
+      if (!guestId) {
+        guestId = crypto.randomUUID();
+        localStorage.setItem(this.GUEST_KEY, guestId);
+      }
+      return guestId;
+    } catch {
+      // Fallback for SSR / private browsing
+      if (!(this as any)._fallbackGuestId) {
+        (this as any)._fallbackGuestId = crypto.randomUUID();
+      }
+      return (this as any)._fallbackGuestId;
     }
-    return guestId;
   }
 
-  // ── Fetch cart ──
+  // ── Fetch Cart ──────────────────────────────────────────────────────────────
+
   fetchCart(): Observable<CartItem[]> {
     const guestId = this.getGuestId();
     return this.http.get<CartItem[]>(`${this.BASE_URL}/${guestId}`).pipe(
-      tap(items => this.cartSubject.next(items))
+      tap(items => this.cartSubject.next(items.filter(i => i.quantity > 0)))
     );
   }
 
-  // ── Add item ──
-  addItem(productId: number, quantity: number = 1, variantId?: number): Observable<any> {
-    const guestId = this.getGuestId();
-    const payload: any = {
-      guestId,
-      productId: String(productId),
-      quantity:  String(quantity)
+  // ── Add New Item (Product Page se) ─────────────────────────────────────────
+  // Uses POST /addcart — only for adding a NEW item to cart
+
+  addItem(variantId: number, quantity: number = 1): Observable<any> {
+    const payload = {
+      guestId:   this.getGuestId(),
+      quantity:  String(quantity),
+      variantId: String(variantId)
     };
-    if (variantId) payload.variantId = String(variantId);
-    return this.http.post(`${this.BASE_URL}/addcart`, payload).pipe(
+    return this.http.post(`${this.BASE_URL}/addcart`, payload, { responseType: 'text' }).pipe(
       tap(() => this.fetchCart().subscribe())
     );
   }
 
-  // ── Increment ──
+  // ── Increment ───────────────────────────────────────────────────────────────
+  // Uses PUT /item/{cartItemId}/increase — backend quantity +1 karta hai
+
   increment(variantId: number): void {
-    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
-    if (item) this.addItem(0, 1, variantId).subscribe();
+    const snapshot = this.cartSubject.value;
+    const item = snapshot.find(i => i.variantId === variantId);
+    if (!item) return;
+
+    // Stock limit guard
+    if (item.quantity >= item.stockAvailable) return;
+
+    // Race condition guard — ek hi call at a time per item
+    if (this.pendingCalls.get(variantId)) return;
+    this.pendingCalls.set(variantId, true);
+
+    // 1. Optimistic UI update immediately
+    this.cartSubject.next(
+      snapshot.map(i =>
+        i.variantId === variantId ? { ...i, quantity: i.quantity + 1 } : i
+      )
+    );
+
+    // 2. Correct backend endpoint: PUT /item/{cartItemId}/increase
+    this.http.put(`${this.BASE_URL}/item/${item.cartItemId}/increase`, {}, { responseType: 'text' })
+      .subscribe({
+        next: () => this.pendingCalls.delete(variantId),
+        error: () => {
+          this.pendingCalls.delete(variantId);
+          this.cartSubject.next(snapshot); // revert on failure
+        }
+      });
   }
 
-  // ── Decrement ──
+  // ── Decrement ───────────────────────────────────────────────────────────────
+  // Uses PUT /item/{cartItemId}/decrease — backend quantity -1 karta hai
+  // Agar backend quantity 0 kare toh item automatically delete hoga backend se
+  // Frontend bhi optimistically remove karta hai jab qty = 1
+
   decrement(variantId: number): void {
-    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
+    const snapshot = this.cartSubject.value;
+    const item = snapshot.find(i => i.variantId === variantId);
     if (!item) return;
+
+    // Race condition guard
+    if (this.pendingCalls.get(variantId)) return;
+    this.pendingCalls.set(variantId, true);
+
     if (item.quantity <= 1) {
-      this.removeByVariant(variantId);
+      // ── qty 1 → 0: Optimistic remove from UI immediately ──────────────────
+      this.cartSubject.next(snapshot.filter(i => i.variantId !== variantId));
+
+      // Backend decrease call — backend khud delete karega quantity 0 pe
+      this.http.put(`${this.BASE_URL}/item/${item.cartItemId}/decrease`, {}, { responseType: 'text' })
+        .subscribe({
+          next: () => this.pendingCalls.delete(variantId),
+          error: () => {
+            this.pendingCalls.delete(variantId);
+            this.cartSubject.next(snapshot); // revert — item wapas aayega
+          }
+        });
+
     } else {
-      this.addItem(0, -1, variantId).subscribe();
+      // ── qty > 1: Optimistic decrement ────────────────────────────────────
+      this.cartSubject.next(
+        snapshot.map(i =>
+          i.variantId === variantId ? { ...i, quantity: i.quantity - 1 } : i
+        )
+      );
+
+      // Correct backend endpoint: PUT /item/{cartItemId}/decrease
+      this.http.put(`${this.BASE_URL}/item/${item.cartItemId}/decrease`, {}, { responseType: 'text' })
+        .subscribe({
+          next: () => this.pendingCalls.delete(variantId),
+          error: () => {
+            this.pendingCalls.delete(variantId);
+            this.cartSubject.next(snapshot); // revert on failure
+          }
+        });
     }
   }
 
-  // ── Remove by cart item id ──
+  // ── Remove Item ─────────────────────────────────────────────────────────────
+  // Direct remove button ke liye — uses DELETE /{guestId}/{cartItemId}
+
   removeItem(cartItemId: number): void {
+    const snapshot = this.cartSubject.value;
     const guestId = this.getGuestId();
+
+    // Optimistic remove
+    this.cartSubject.next(snapshot.filter(i => i.cartItemId !== cartItemId));
+
     this.http.delete(`${this.BASE_URL}/${guestId}/${cartItemId}`).subscribe({
-      next:  () => this.fetchCart().subscribe(),
-      error: () => {
-        const updated = this.cartSubject.value.filter(i => i.id !== cartItemId);
-        this.cartSubject.next(updated);
-      }
+      error: () => this.cartSubject.next(snapshot) // revert on failure
     });
   }
 
-  // ── Remove by variant id ──
   removeByVariant(variantId: number): void {
-    const item = this.cartSubject.value.find(i => i.variant.id === variantId);
-    if (item) this.removeItem(item.id);
+    const item = this.cartSubject.value.find(i => i.variantId === variantId);
+    if (item) this.removeItem(item.cartItemId);
   }
 
-  // ── Clear cart ──
-  clearCart(): void {
+  // ── Clear Cart ──────────────────────────────────────────────────────────────
+
+  clearCart(): Observable<any> {
     const guestId = this.getGuestId();
-    this.http.delete(`${this.BASE_URL}/${guestId}`).subscribe({
-      next:  () => this.cartSubject.next([]),
-      error: () => this.cartSubject.next([])
-    });
+    const snapshot = this.cartSubject.value;
+
+    // Optimistic clear
+    this.cartSubject.next([]);
+
+    return this.http.delete(`${this.BASE_URL}/${guestId}`).pipe(
+      catchError(err => {
+        this.cartSubject.next(snapshot); // revert on failure
+        return throwError(() => err);
+      })
+    );
   }
 
-  // ── Helpers ──
-  getItems(): CartItem[] { return this.cartSubject.value; }
+  // ── Getters ─────────────────────────────────────────────────────────────────
+
+  getItems(): CartItem[] {
+    return this.cartSubject.value;
+  }
 
   getTotalCount(): number {
-    return this.cartSubject.value.reduce((s, i) => s + i.quantity, 0);
+    return this.cartSubject.value.reduce((sum, i) => sum + i.quantity, 0);
   }
 
   getTotalPrice(): number {
-    return this.cartSubject.value.reduce((s, i) => s + i.price * i.quantity, 0);
+    const raw = this.cartSubject.value.reduce(
+      (sum, i) => sum + i.currentPrice * i.quantity, 0
+    );
+    return +raw.toFixed(2);
   }
 
   isInCart(variantId: number): boolean {
-    return this.cartSubject.value.some(i => i.variant.id === variantId);
+    return this.cartSubject.value.some(i => i.variantId === variantId);
   }
 }

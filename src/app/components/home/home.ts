@@ -37,34 +37,28 @@ import { WhyUsComponent }       from './why-us/why-us.component';
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── ViewChild refs for scroll reveal ──────────────────────────
   @ViewChild('categoriesSection')  private categoriesSection!:  ElementRef;
   @ViewChild('trendingSection')    private trendingSection!:    ElementRef;
   @ViewChild('newArrivalsSection') private newArrivalsSection!: ElementRef;
   @ViewChild('whySection')         private whySection!:         ElementRef;
 
-  // ── Data ──────────────────────────────────────────────────────
   trendingProducts: Product[] = [];
   recentProducts:   Product[] = [];
   categories:       any[]     = [];
 
-  // ── Cart state ────────────────────────────────────────────────
   pendingQuantities: { [id: number]: number }  = {};
   cartedProducts:    { [id: number]: boolean } = {};
 
-  // ── Loading ───────────────────────────────────────────────────
   loadingTrending   = true;
   loadingRecent     = true;
   loadingCategories = true;
 
-  // ── Scroll reveal ─────────────────────────────────────────────
   heroVisible        = false;
   catsVisible        = false;
   trendingVisible    = false;
   newArrivalsVisible = false;
   whyVisible         = false;
 
-  // ── Hero slider ───────────────────────────────────────────────
   heroSlide  = 0;
   heroSlides: { image: string; tag: string; title: string }[] = [];
 
@@ -80,15 +74,11 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     private router:          Router,
   ) {}
 
-  // ── Lifecycle ─────────────────────────────────────────────────
-
   ngOnInit(): void {
-    // Backend se cart fetch karo — tab cartedProducts aur header count dono update honge
     this.cartService.fetchCart().subscribe({
       next: (items) => {
         items.forEach(item => {
-          const productId = item.variant?.product?.id;
-          if (productId) this.cartedProducts[productId] = true;
+          if (item.productId) this.cartedProducts[item.productId] = true;
         });
       }
     });
@@ -129,18 +119,19 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addToCart(product: any): void {
-    const variantId = product.selectedVariant?.id;
+    const variantId = product.selectedVariant?.id as number;
     if (!variantId || this.cartedProducts[product.id]) return;
 
     const qty = this.pendingQuantities[product.id] ?? 1;
 
-    this.cartService.addItem(product.id, qty, variantId).subscribe({
+    // ✅ addItem(variantId, qty) — 2 arguments only, matches fixed cart.service.ts
+    this.cartService.addItem(variantId, qty).subscribe({
       next: () => {
         const { [product.id]: _, ...rest } = this.pendingQuantities;
         this.pendingQuantities = rest;
         this.cartedProducts    = { ...this.cartedProducts, [product.id]: true };
       },
-      error: (err) => console.error('Add to cart failed:', err),
+      error: (err: any) => console.error('Add to cart failed:', err),
     });
   }
 
