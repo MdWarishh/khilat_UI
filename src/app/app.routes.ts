@@ -78,6 +78,8 @@ export const routes: Routes = [
       },
        { path: 'orders',    loadComponent: () => import('./admin/orders/orders.component').then(m => m.AdminOrdersComponent) },
        { path: 'orders/:id',    loadComponent: () => import('./admin/order-detail/order-detail.component').then(m => m.OrderDetailComponent) },
+        { path: 'dispatched',    loadComponent: () => import('./admin/dispatched/dispatched-orders/dispatched-orders.component').then(m => m.DispatchedOrdersComponent) },
+        { path: 'dispatched/:id',    loadComponent: () => import('./admin/dispatched/dispatched-order-detail/dispatched-order-detail.component').then(m => m.DispatchedOrderDetailComponent) },
         {
         path: 'categories',
         loadComponent: () => import('./admin/categories/categories.component').then(m => m.CategoriesComponent),

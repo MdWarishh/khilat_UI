@@ -1,4 +1,4 @@
-<!-- admin/orders/orders.component.html -->
+<!-- src/app/admin/dispatched/dispatched-orders/dispatched-orders.component.html -->
 <div class="orders-page">
 
   <!-- ── TOP BAR ── -->
@@ -17,38 +17,23 @@
                 (click)="searchQuery=''; applyFilters()">✕</button>
       </div>
 
-      <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
-        <option value="">All Statuses</option>
-        <option *ngFor="let s of allStatuses" [value]="s.value">{{ s.label }}</option>
-      </select>
-
-      <!-- Date filter -->
-      <div class="date-pick-wrap">
+      <!-- Dispatched indicator chip -->
+      <div class="dispatched-chip">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
         </svg>
-        <input type="date" class="date-input" [(ngModel)]="dateFrom"
-               (change)="onDateChange()" title="Filter by date">
-        <button class="date-clear" *ngIf="dateFrom" (click)="clearDateFilter()" title="Clear date">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.5" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+        Dispatched Orders
       </div>
 
     </div>
 
-    <!-- FIX: Sirf 2 chips — Pending + Dispatched, real backend counts -->
+    <!-- Total count chip -->
     <div class="stat-chips">
-      <div class="stat-chip" *ngFor="let s of statusStats"
-           [style.background]="s.bg" [style.color]="s.color">
-        <span class="chip-val">{{ s.count }}</span>
-        <span class="chip-lbl">{{ s.label }}</span>
+      <div class="stat-chip" style="background:rgba(139,92,246,0.1);color:#6d28d9;">
+        <span class="chip-val">{{ totalElements }}</span>
+        <span class="chip-lbl">Dispatched</span>
       </div>
     </div>
   </div>
@@ -67,7 +52,7 @@
   <!-- ── LOADING ── -->
   <div class="loading-wrap" *ngIf="loading">
     <div class="spinner"></div>
-    <p>Loading orders...</p>
+    <p>Loading dispatched orders...</p>
   </div>
 
   <!-- ── TABLE ── -->
@@ -75,17 +60,7 @@
 
     <div class="table-meta">
       <span class="results-info">
-        Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ totalElements }} orders
-        <span class="date-filter-tag" *ngIf="dateFrom">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          {{ dateFrom | date:'dd MMM yyyy' }}
-        </span>
+        Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ totalElements }} dispatched orders
       </span>
       <div class="page-size-wrap">
         <span>Show</span>
@@ -98,6 +73,7 @@
       </div>
     </div>
 
+    <!-- Table -->
     <div class="table-wrap" *ngIf="pagedOrders.length > 0">
       <table>
         <thead>
@@ -131,13 +107,14 @@
           <tr *ngFor="let order of pagedOrders; let i = index"
               class="table-row"
               [style.animation-delay]="(i * 0.04) + 's'"
-              (click)="openDetailPage(order)">
+              (click)="openDetail(order)">
 
             <td><span class="order-id">#{{ order.orderId }}</span></td>
 
             <td>
               <div class="customer-cell">
                 <span class="customer-name">{{ order.name }}</span>
+                <span class="customer-email">{{ order.email }}</span>
               </div>
             </td>
 
@@ -159,15 +136,12 @@
             </td>
 
             <td>
-              <span class="status-badge" [ngClass]="getStatusClass(order.orderStatus)">
-                {{ order.orderStatus }}
-              </span>
+              <span class="status-badge status-DISPATCHED">DISPATCHED</span>
             </td>
 
             <td>
               <div class="action-btns" (click)="$event.stopPropagation()">
-                <button class="btn-icon view"
-                        (click)="openDetailPage(order)" title="View Details">
+                <button class="btn-icon view" (click)="openDetail(order)" title="View Details">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                        stroke="currentColor" stroke-width="2"
                        stroke-linecap="round" stroke-linejoin="round">
@@ -175,43 +149,22 @@
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
                 </button>
-                <button class="btn-icon dispatch"
-                        (click)="dispatchOrder(order)"
-                        [disabled]="order.orderStatus !== 'PENDING' && order.orderStatus !== 'CONFIRMED'"
-                        title="Dispatch">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="2"
-                       stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                  </svg>
-                </button>
-                <button class="btn-icon cancel"
-                        (click)="cancelOrder(order)"
-                        [disabled]="order.orderStatus === 'CANCELLED' || order.orderStatus === 'DELIVERED' || order.orderStatus === 'DISPATCHED'"
-                        title="Cancel">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="2"
-                       stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                  </svg>
-                </button>
               </div>
             </td>
+
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Empty state -->
     <div class="empty-state" *ngIf="pagedOrders.length === 0 && !loading">
-      <span class="empty-icon">📦</span>
-      <h3>No orders found</h3>
-      <p>Try changing your search or filters</p>
-      <button class="btn-clear" (click)="clearFilters()">Clear Filters</button>
+      <span class="empty-icon">🚚</span>
+      <h3>No dispatched orders yet</h3>
+      <p>Orders will appear here once they are marked as dispatched</p>
     </div>
 
+    <!-- Pagination -->
     <div class="pagination" *ngIf="totalPages > 1">
       <button class="pg-btn" (click)="goToPage(0)"             [disabled]="currentPage===0">«</button>
       <button class="pg-btn" (click)="goToPage(currentPage-1)" [disabled]="currentPage===0">‹</button>
