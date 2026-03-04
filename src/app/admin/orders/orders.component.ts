@@ -93,9 +93,16 @@ export class AdminOrdersComponent implements OnInit {
       .set('size', String(this.pageSize));
 
     // Backend expects ISO date format: YYYY-MM-DD (e.g. 2026-03-03)
-    if (this.dateFrom) {
-      params = params.set('date', this.dateFrom);
-    }
+   if (this.dateFrom) {
+  const d = new Date(this.dateFrom);
+
+  const formattedDate =
+    d.getFullYear() +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    String(d.getDate()).padStart(2, '0');
+
+  params = params.set('date', formattedDate);
+}
 
     const auth = this.authHeaders();
     this.http.get<PageResponse<OrderSummaryDto>>(
