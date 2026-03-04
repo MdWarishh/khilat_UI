@@ -23,8 +23,11 @@
       [animDelay]="i * 0.12 + 's'"
       badgeLabel="🔥 Trending"
       badgeClass="badge-trending"
+      [qty]="getQty(p.id)"
       [inCart]="isInCart(p.id)"
       (productClick)="productClick.emit($event)"
+      (increment)="increment.emit($event)"
+      (decrement)="decrement.emit($event)"
       (addToCart)="addToCart.emit($event)"
     ></app-product-card>
   </div>

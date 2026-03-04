@@ -9,14 +9,18 @@
         <span class="modal-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+            <line x1="7" y1="7" x2="7.01" y2="7"/>
           </svg>
         </span>
-        <h2 class="modal-title">{{ isEdit ? 'Edit Category' : 'Add Category' }}</h2>
+        <div class="modal-title-block">
+          <span class="modal-eyebrow">{{ isEdit ? 'Editing' : 'New' }}</span>
+          <h2 class="modal-title">{{ isEdit ? 'Edit Category' : 'Add Category' }}</h2>
+        </div>
       </div>
       <button class="modal-close" (click)="cancel.emit()" title="Close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
@@ -24,40 +28,63 @@
 
     <!-- Body -->
     <div class="modal-body">
-      <!-- Name field -->
+
+      <!-- Name -->
       <div class="field-group">
-        <label class="field-label">Category Name <span class="required">*</span></label>
-        <input
-          class="field-input"
-          type="text"
-          [(ngModel)]="form.name"
-          placeholder="e.g. Kurtis, Sarees, Dupattas..."
-          [disabled]="saving"
-          autofocus />
+        <label class="field-label">
+          Category Name <span class="required">*</span>
+        </label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+          </span>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="form.name"
+            placeholder="e.g. Kurtis, Sarees, Dupattas..."
+            [disabled]="saving"
+            autofocus />
+        </div>
+        <span class="field-hint">This name will appear in product filters and listings.</span>
       </div>
 
-      <!-- Description field -->
+      <!-- Description -->
       <div class="field-group">
-        <label class="field-label">Description <span class="optional">(optional)</span></label>
+        <label class="field-label">
+          Description <span class="optional">(optional)</span>
+        </label>
         <textarea
-          class="field-input field-textarea"
+          class="field-input no-icon"
           [(ngModel)]="form.description"
           placeholder="Short description about this category..."
           rows="3"
           [disabled]="saving">
         </textarea>
       </div>
+
     </div>
+
+    <div class="modal-divider"></div>
 
     <!-- Footer -->
     <div class="modal-footer">
-      <button class="btn-cancel" (click)="cancel.emit()" [disabled]="saving">Cancel</button>
+      <button class="btn-cancel" (click)="cancel.emit()" [disabled]="saving">
+        Cancel
+      </button>
       <button class="btn-save" (click)="submit()" [disabled]="saving || !form.name.trim()">
-        <span *ngIf="!saving">{{ isEdit ? 'Update' : 'Add Category' }}</span>
-        <span *ngIf="saving" class="spinner-wrap">
-          <span class="spinner"></span>
-          {{ isEdit ? 'Updating...' : 'Adding...' }}
-        </span>
+        <span class="btn-spinner" *ngIf="saving"></span>
+        <svg *ngIf="!saving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline *ngIf="isEdit" points="20 6 9 17 4 12"/>
+          <line *ngIf="!isEdit" x1="12" y1="5" x2="12" y2="19"/>
+          <line *ngIf="!isEdit" x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ saving ? (isEdit ? 'Updating...' : 'Adding...') : (isEdit ? 'Update' : 'Add Category') }}
       </button>
     </div>
 

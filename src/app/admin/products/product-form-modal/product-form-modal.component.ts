@@ -32,7 +32,7 @@ export class ProductFormModalComponent implements OnChanges {
   // Form data
   formData: ProductFormData = {
     name: '', description: '', categoryId: 0,
-    trending: 'NO', isActive: true, variants: []
+    trending: 'N', isActive: true, variants: []
   };
 
   // Image state
@@ -54,7 +54,7 @@ export class ProductFormModalComponent implements OnChanges {
         name:        this.editingProduct.name,
         description: this.editingProduct.description || '',
         categoryId:  Number(this.editingProduct.category?.id || 0),
-        trending:    this.editingProduct.trending || 'NO',
+        trending: this.editingProduct.trending || 'N',
         isActive:    this.editingProduct.isActive,
         variants:    this.editingProduct.variants?.map(v => ({ ...v })) || [],
       };
@@ -62,7 +62,7 @@ export class ProductFormModalComponent implements OnChanges {
     } else {
       this.formData = {
         name: '', description: '', categoryId: 0,
-        trending: 'NO', isActive: true, variants: []
+        trending: 'N', isActive: true, variants: []
       };
       this.localImages = [];
     }

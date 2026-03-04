@@ -1,44 +1,272 @@
-<div class="container py-5 my-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-xl-6">
-      <h1 class="text-center mb-5">Get in Touch</h1>
+<!-- contact/contact.html -->
+<div class="contact-page">
 
-      <div class="alert alert-info text-center mb-5">
-        <i class="bi bi-envelope-paper fs-1 d-block mb-3"></i>
-        <h4>Coming Soon 🚀</h4>
-        <p class="mb-0">Real contact form & support coming with the backend</p>
-      </div>
-
-      <!-- Placeholder form – looks real but doesn't send yet -->
-      <form (ngSubmit)="onSubmit()" #contactForm="ngForm" class="p-4 bg-light rounded-4 shadow-sm">
-        <div class="mb-4">
-          <label for="name" class="form-label fw-medium">Your Name</label>
-          <input type="text" class="form-control form-control-lg" id="name" 
-                 [(ngModel)]="name" name="name" required placeholder="John Doe">
-        </div>
-
-        <div class="mb-4">
-          <label for="email" class="form-label fw-medium">Email Address</label>
-          <input type="email" class="form-control form-control-lg" id="email" 
-                 [(ngModel)]="email" name="email" required placeholder="you@example.com">
-        </div>
-
-        <div class="mb-4">
-          <label for="message" class="form-label fw-medium">Message</label>
-          <textarea class="form-control form-control-lg" id="message" rows="5"
-                    [(ngModel)]="message" name="message" required 
-                    placeholder="Tell us what you're thinking..."></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg w-100" 
-                [disabled]="!contactForm.valid">
-          Send Message
-        </button>
-      </form>
-
-      <p class="text-center text-muted mt-5 small">
-        We'll get back to you as soon as possible once the system is live.
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-inner">
+      <p class="hero-eyebrow">
+        <span class="orn-star">✦</span>
+        Say Hello
+        <span class="orn-star">✦</span>
+      </p>
+      <h1 class="hero-heading">
+        Let's start a<br>
+        <em>conversation</em>
+      </h1>
+      <p class="hero-sub">
+        Whether you have a question about an order, need styling advice,
+        or just want to say hi — we'd love to hear from you.
       </p>
     </div>
-  </div>
+    <div class="hero-scroll-line"></div>
+  </section>
+
+  <!-- ══ MAIN CONTENT — 2 col ══ -->
+  <section class="contact-section">
+    <div class="contact-inner">
+
+      <!-- LEFT — Info + contact details -->
+      <div class="info-col reveal">
+
+        <!-- Brand statement card (dark) -->
+        <div class="brand-card">
+          <div class="bc-glow"></div>
+          <p class="bc-label">Khilat Kurti's</p>
+          <blockquote class="bc-quote">
+            "We're here for you,<br>always."
+          </blockquote>
+          <p class="bc-body">
+            Our team is passionate about helping you find the perfect piece.
+            Reach out any time — we usually respond within 24 hours.
+          </p>
+        </div>
+
+        <!-- Contact info items -->
+        <div class="contact-items">
+
+          <div class="ci-item">
+            <div class="ci-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <p class="ci-label">Email Us</p>
+              <p class="ci-value">support&#64;khilatkurtis.com</p>
+            </div>
+          </div>
+
+          <div class="ci-item">
+            <div class="ci-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="ci-label">Call / WhatsApp</p>
+              <p class="ci-value">+91 99999 99999</p>
+            </div>
+          </div>
+
+          <div class="ci-item">
+            <div class="ci-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div>
+              <p class="ci-label">Our Base</p>
+              <p class="ci-value">Lucknow, Uttar Pradesh</p>
+            </div>
+          </div>
+
+          <div class="ci-item">
+            <div class="ci-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div>
+              <p class="ci-label">Working Hours</p>
+              <p class="ci-value">Mon–Sat, 10am – 7pm</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Social row -->
+        <div class="social-row">
+          <a href="#" class="soc-btn" aria-label="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="WhatsApp">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          </a>
+          <a href="#" class="soc-btn" aria-label="Pinterest">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.236 2.636 7.855 6.356 9.312C8.22 20.514 8.143 19.3 8.345 18.437c.181-.78 1.172-4.97 1.172-4.97s-.299-.598-.299-1.482c0-1.388.806-2.428 1.808-2.428.853 0 1.267.641 1.267 1.408 0 .858-.546 2.14-.828 3.33-.236.995.499 1.806 1.476 1.806 1.771 0 3.135-1.867 3.135-4.56 0-2.385-1.715-4.052-4.163-4.052-2.836 0-4.498 2.127-4.498 4.325 0 .856.33 1.775.741 2.276a.3.3 0 01.069.286c-.075.314-.243.995-.277 1.134-.044.183-.145.222-.335.134-1.249-.581-2.03-2.407-2.03-3.874 0-3.154 2.292-6.052 6.608-6.052 3.469 0 6.165 2.473 6.165 5.776 0 3.447-2.173 6.22-5.19 6.22-1.013 0-1.967-.527-2.292-1.148l-.623 2.378c-.226.869-.835 1.958-1.244 2.621A10 10 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- RIGHT — Contact form -->
+      <div class="form-col reveal" style="--d:0.15s">
+
+        <!-- Success state -->
+        <div class="success-state" *ngIf="submitted">
+          <div class="success-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h3 class="success-title">Message Sent!</h3>
+          <p class="success-body">Thank you for reaching out. We'll get back to you within 24 hours.</p>
+          <button class="send-again-btn" (click)="resetForm()">Send Another Message</button>
+        </div>
+
+        <!-- Form -->
+        <form class="contact-form" (ngSubmit)="onSubmit()" #contactForm="ngForm" *ngIf="!submitted">
+
+          <div class="form-header">
+            <div class="fh-orn">
+              <div class="forn-line"></div>
+              <svg class="forn-star" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+              </svg>
+              <div class="forn-line"></div>
+            </div>
+            <h2 class="form-title">Send us a message</h2>
+            <p class="form-subtitle">We read every message personally.</p>
+          </div>
+
+          <!-- Name -->
+          <div class="field-group" [class.has-value]="name">
+            <label for="name" class="field-label">Your Name</label>
+            <div class="field-wrap">
+              <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input type="text" id="name" name="name"
+                     [(ngModel)]="name" required
+                     placeholder="Your full name"
+                     class="field-input" autocomplete="name">
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group" [class.has-value]="email">
+            <label for="email" class="field-label">Email Address</label>
+            <div class="field-wrap">
+              <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" id="email" name="email"
+                     [(ngModel)]="email" required
+                     placeholder="you@example.com"
+                     class="field-input" autocomplete="email">
+            </div>
+          </div>
+
+          <!-- Subject -->
+          <div class="field-group" [class.has-value]="subject">
+            <label for="subject" class="field-label">Subject</label>
+            <div class="field-wrap">
+              <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+              </svg>
+              <input type="text" id="subject" name="subject"
+                     [(ngModel)]="subject"
+                     placeholder="Order enquiry, styling help…"
+                     class="field-input">
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="field-group textarea-group" [class.has-value]="message">
+            <label for="message" class="field-label">Your Message</label>
+            <div class="field-wrap">
+              <svg class="field-icon field-icon-top" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              <textarea id="message" name="message"
+                        [(ngModel)]="message" required
+                        rows="5"
+                        placeholder="Tell us what's on your mind…"
+                        class="field-input field-textarea"></textarea>
+            </div>
+            <span class="char-count">{{ message.length }}/500</span>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="submit-btn"
+                  [disabled]="!contactForm.valid || sending"
+                  [class.loading]="sending">
+            <span class="btn-text" *ngIf="!sending">
+              Send Message
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+              </svg>
+            </span>
+            <span class="btn-loading" *ngIf="sending">
+              <span class="ldot"></span>
+              <span class="ldot"></span>
+              <span class="ldot"></span>
+            </span>
+          </button>
+
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ FAQ STRIP ══ -->
+  <section class="faq-section">
+    <div class="faq-inner reveal">
+      <div class="section-orn">
+        <div class="orn-line"></div>
+        <svg class="orn-spin" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        </svg>
+        <div class="orn-line"></div>
+      </div>
+      <h2 class="faq-title">Quick Answers</h2>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>How long does delivery take?</h4>
+          <p>Standard delivery takes 5–7 working days across India. Express options available at checkout.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can I return or exchange?</h4>
+          <p>Yes! We offer easy returns within 7 days of delivery. Items must be unwashed and with tags intact.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Do you ship internationally?</h4>
+          <p>Currently we ship across India. International shipping is coming soon — stay tuned!</p>
+        </div>
+        <div class="faq-item">
+          <h4>How do I track my order?</h4>
+          <p>Once shipped, you'll receive a tracking link via email and SMS within 24 hours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
