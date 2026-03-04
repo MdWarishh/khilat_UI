@@ -14,6 +14,7 @@ import { ProductFiltersComponent }     from './product-filters/product-filters.c
 import { ProductTableComponent }       from './product-table/product-table.component';
 import { ProductDetailModalComponent } from './product-detail-modal/product-detail-modal.component';
 import { ProductFormModalComponent }   from './product-form-modal/product-form-modal.component';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-admin-products',
@@ -29,6 +30,11 @@ import { ProductFormModalComponent }   from './product-form-modal/product-form-m
   styleUrl:    './products.component.css'
 })
 export class AdminProductsComponent implements OnInit {
+
+
+  
+  private searchSubject = new Subject<string>();
+  private lastSearchQuery: string = ''; // Pichli search ko yaad rakhne ke liye
 
   // ── Data ──────────────────────────────────────
   products:   Product[]  = [];
@@ -72,6 +78,14 @@ export class AdminProductsComponent implements OnInit {
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
+
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.loadProducts(); // Ab ye sirf 500ms baad ek baar chalega
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -123,12 +137,27 @@ export class AdminProductsComponent implements OnInit {
   // ─────────────────────────────────────────────
 
   onFiltersChange(newFilters: ProductFilters): void {
-    this.filters = newFilters;
-  }
+    const newQuery = newFilters.searchQuery.trim();
+  
+    // Check karein ki kya SACH MEIN typing hui hai
+    if (this.lastSearchQuery !== newQuery) {
+        // Yaad rakhein ab naya word kya hai
+        this.lastSearchQuery = newQuery;
+        this.filters = { ...newFilters }; // Filter object update karein
+        
+        // Debounce ko bhejien
+        this.searchSubject.next(newQuery);
+    } else {
+        // Agar query same hai, matlab Category ya Status badla hai
+        this.filters = { ...newFilters };
+        this.currentPage = 1;
+        this.loadProducts();
+    }
+}
 
   onSearch(): void {
     this.currentPage = 1;  // Search hone par page 1 par reset karo
-    this.loadProducts();
+    // this.loadProducts();
   }
 
   onClearSearch(): void {

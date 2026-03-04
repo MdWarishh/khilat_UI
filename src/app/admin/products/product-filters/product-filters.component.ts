@@ -30,7 +30,7 @@ export class ProductFiltersComponent {
 
   handleSearch(): void {
     this.filtersChange.emit({ ...this.filters });
-    this.onSearch.emit();
+    // this.onSearch.emit();
   }
 
   handleFilterChange(): void {
