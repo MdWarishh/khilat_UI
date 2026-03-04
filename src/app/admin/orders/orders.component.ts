@@ -16,29 +16,6 @@ export interface OrderSummaryDto {
   createdAt:     string;
 }
 
-export interface OrderItemDto {
-  productId:   number;
-  productName: string;
-  price:       number;
-  quantity:    number;
-  imageUrl?:   string;
-}
-
-export interface OrderDto {
-  id:             number;
-  guestId:        string;
-  customerName:   string;
-  customerEmail:  string;
-  customerPhone:  string;
-  address:        string;
-  totalAmount:    number;
-  shippingCharge: number;
-  status:         string;
-  paymentMethod?: string;
-  createdAt:      string;
-  orderItems:     OrderItemDto[];
-}
-
 interface PageResponse<T> {
   content:       T[];
   totalElements: number;
@@ -64,10 +41,6 @@ export class AdminOrdersComponent implements OnInit {
   filteredOrders: OrderSummaryDto[] = [];
   pagedOrders:    OrderSummaryDto[] = [];
 
-  showDetails    = false;
-  selectedOrder: OrderDto | null = null;
-  detailLoading  = false;
-  detailError    = '';
   dispatchLoading = false;
 
   loading = true;
@@ -119,7 +92,7 @@ export class AdminOrdersComponent implements OnInit {
       .set('page', String(this.currentPage))
       .set('size', String(this.pageSize));
 
-    // Send dateFrom to backend (it filters from that date onwards)
+    // Backend expects ISO date format: YYYY-MM-DD (e.g. 2026-03-03)
     if (this.dateFrom) {
       params = params.set('date', this.dateFrom);
     }
@@ -162,31 +135,6 @@ export class AdminOrdersComponent implements OnInit {
     this.dateTo   = '';
     this.currentPage = 0;
     this.loadOrders();
-  }
-
-  // ─────────────────────────────────────────────
-  // LOAD ORDER DETAIL
-  // ─────────────────────────────────────────────
-
-  openDetails(order: OrderSummaryDto): void {
-    this.showDetails   = true;
-    this.detailLoading = true;
-    this.detailError   = '';
-    this.selectedOrder = null;
-
-    this.http.get<OrderDto>(
-      `${environment.apiUrl}/admin/order/${order.orderId}`,
-      this.authHeaders()
-    ).subscribe({
-      next: (res) => {
-        this.selectedOrder = res;
-        this.detailLoading = false;
-      },
-      error: (err) => {
-        this.detailError   = err.error?.message || 'Failed to load order details.';
-        this.detailLoading = false;
-      }
-    });
   }
 
   // ─────────────────────────────────────────────
@@ -277,8 +225,8 @@ export class AdminOrdersComponent implements OnInit {
   // Updates status in list + modal immediately
   // ─────────────────────────────────────────────
 
-  dispatchOrder(order: OrderSummaryDto | OrderDto): void {
-    const id = 'orderId' in order ? order.orderId : order.id;
+  dispatchOrder(order: OrderSummaryDto): void {
+    const id = order.orderId;
     if (!confirm(`Mark order #${id} as dispatched?`)) return;
 
     this.dispatchLoading = true;
@@ -289,18 +237,13 @@ export class AdminOrdersComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.dispatchLoading = false;
-
-        // Update in allOrders list
+        // Update locally immediately so UI reflects instantly
         const summary = this.allOrders.find(o => o.orderId === id);
         if (summary) summary.orderStatus = 'DISPATCHED';
-
-        // Update in modal if open
-        if (this.selectedOrder?.id === id) {
-          this.selectedOrder = { ...this.selectedOrder, status: 'DISPATCHED' };
-        }
-
         this.applyFilters();
         this.buildStatusStats();
+        // Also reload from server to sync latest state
+        this.loadOrders();
       },
       error: (err) => {
         this.dispatchLoading = false;
@@ -309,17 +252,29 @@ export class AdminOrdersComponent implements OnInit {
     });
   }
 
-  cancelOrder(order: OrderSummaryDto | OrderDto): void {
-    const id = 'orderId' in order ? order.orderId : order.id;
+  cancelOrder(order: OrderSummaryDto): void {
+    const id = order.orderId;
     if (!confirm(`Cancel order #${id}?`)) return;
 
-    const summary = this.allOrders.find(o => o.orderId === id);
-    if (summary) summary.orderStatus = 'CANCELLED';
-    if (this.selectedOrder?.id === id) {
-      this.selectedOrder = { ...this.selectedOrder, status: 'CANCELLED' };
-    }
-    this.applyFilters();
-    this.buildStatusStats();
+    const params = new HttpParams().set('status', 'CANCELLED');
+    this.http.patch<string>(
+      `${environment.apiUrl}/admin/order/${id}/status`,
+      {},
+      { ...this.authHeaders(), params }
+    ).subscribe({
+      next: () => {
+        // Update locally immediately
+        const summary = this.allOrders.find(o => o.orderId === id);
+        if (summary) summary.orderStatus = 'CANCELLED';
+        this.applyFilters();
+        this.buildStatusStats();
+        // Reload to sync with server
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Could not cancel order.';
+      }
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -360,10 +315,6 @@ export class AdminOrdersComponent implements OnInit {
       done:    i < idx,
       current: i === idx,
     }));
-  }
-
-  getSubtotal(order: OrderDto): number {
-    return (order.totalAmount || 0) - (order.shippingCharge || 0);
   }
 
   // Resolve relative image URLs

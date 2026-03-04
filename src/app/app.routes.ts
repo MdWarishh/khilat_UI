@@ -78,6 +78,10 @@ export const routes: Routes = [
       },
        { path: 'orders',    loadComponent: () => import('./admin/orders/orders.component').then(m => m.AdminOrdersComponent) },
        { path: 'orders/:id',    loadComponent: () => import('./admin/order-detail/order-detail.component').then(m => m.OrderDetailComponent) },
+        {
+        path: 'categories',
+        loadComponent: () => import('./admin/categories/categories.component').then(m => m.CategoriesComponent),
+      },
       {
         path: '',
         redirectTo: 'dashboard',

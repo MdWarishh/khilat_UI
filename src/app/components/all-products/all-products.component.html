@@ -210,7 +210,7 @@
             <div class="cart-controls" *ngIf="!isFullyOutOfStock(product)">
 
               <!-- Size Dropdown -->
-              <div class="sz-dropdown-wrap" *ngIf="product.variants?.length">
+              <div class="sz-dropdown-wrap" *ngIf="product.variants.length">
                 <div class="sz-select-box"
                      [class.sz-open]="openDropdownId === product.id"
                      (click)="toggleDropdown(product.id)">

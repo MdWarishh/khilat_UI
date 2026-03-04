@@ -5,7 +5,42 @@ import { ActivatedRoute, Router }  from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { FormsModule }             from '@angular/forms';
 import { environment }             from '../../../environments/environments';
-import { OrderDto }                from '../orders/orders.component';
+
+// ── Matches ACTUAL backend response ──────────────────────────
+interface PaymentDto {
+  id:            number;
+  amount:        number;
+  createdAt:     string;
+  paymentstatus: string;
+}
+
+interface OrderItemDto {
+  id:            number;
+  orderid:       number;
+  productId:     number;
+  quantity:      number;
+  price:         number;
+  productName:   string;
+  imageUrl?:     string;
+  stockLeft?:    number;
+  categoryName?: string;
+  size?:         string;
+  color?:        string;
+}
+
+export interface OrderDetailResponse {
+  id:        number;
+  guestId:   string | null;
+  payment:   PaymentDto | null;
+  email:     string;
+  name:      string;
+  address:   string;
+  status:    string;
+  phone:     number | null;
+  createdAt: string;
+  items:     OrderItemDto[];
+}
+// ─────────────────────────────────────────────────────────────
 
 interface TimelineStep { label: string; done: boolean; current: boolean; }
 
@@ -18,19 +53,19 @@ interface TimelineStep { label: string; done: boolean; current: boolean; }
 })
 export class OrderDetailComponent implements OnInit {
 
-  order: OrderDto | null = null;
+  order: OrderDetailResponse | null = null;
   loading       = true;
   error         = '';
   actionLoading = false;
   actionError   = '';
   timeline: TimelineStep[] = [];
 
-  // For inline status dropdown
   selectedStatus = '';
   statusUpdating = false;
   statusSuccess  = false;
 
-  readonly allStatuses = ['PENDING', 'CONFIRMED', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
+  // Only allow up to CONFIRMED from this page
+  readonly allStatuses = ['PENDING', 'CONFIRMED'];
 
   constructor(
     private route:  ActivatedRoute,
@@ -49,7 +84,7 @@ export class OrderDetailComponent implements OnInit {
   // ─────────────────────────────────────────────
 
   private loadOrder(id: number): void {
-    this.http.get<OrderDto>(
+    this.http.get<OrderDetailResponse>(
       `${environment.apiUrl}/admin/order/${id}`,
       this.authHeaders()
     ).subscribe({
@@ -60,55 +95,21 @@ export class OrderDetailComponent implements OnInit {
         this.loading        = false;
       },
       error: (err) => {
-        this.error   = err.error?.message || 'Failed to load order.';
+        this.error   = err.error?.message || err.error || 'Failed to load order.';
         this.loading = false;
       }
     });
   }
 
   // ─────────────────────────────────────────────
-  // DISPATCH (POST /admin/dispatch/{id})
-  // ─────────────────────────────────────────────
-
-  dispatchOrder(): void {
-    if (!this.order) return;
-    if (!confirm(`Mark order #${this.order.id} as dispatched?`)) return;
-
-    this.actionLoading = true;
-    this.actionError   = '';
-
-    this.http.post<string>(
-      `${environment.apiUrl}/admin/dispatch/${this.order.id}`, {},
-      this.authHeaders()
-    ).subscribe({
-      next: () => {
-        this.actionLoading  = false;
-        this.order          = { ...this.order!, status: 'DISPATCHED' };
-        this.selectedStatus = 'DISPATCHED';
-        this.timeline       = this.buildTimeline('DISPATCHED');
-      },
-      error: (err) => {
-        this.actionLoading = false;
-        this.actionError   = err.error || 'Could not dispatch order.';
-      }
-    });
-  }
-
-  // ─────────────────────────────────────────────
-  // UPDATE STATUS via dropdown (PATCH /admin/order/{id}/status)
+  // STATUS CHANGE — PATCH /admin/order/{id}/status
   // ─────────────────────────────────────────────
 
   onStatusChange(): void {
     if (!this.order || this.selectedStatus === this.order.status) return;
 
-    // Special case: dispatch uses dedicated endpoint
-    if (this.selectedStatus === 'DISPATCHED') {
-      this.dispatchOrder();
-      return;
-    }
-
     if (!confirm(`Change order #${this.order.id} status to "${this.selectedStatus}"?`)) {
-      this.selectedStatus = this.order.status; // revert dropdown
+      this.selectedStatus = this.order.status;
       return;
     }
 
@@ -132,13 +133,13 @@ export class OrderDetailComponent implements OnInit {
       error: (err) => {
         this.statusUpdating = false;
         this.actionError    = err.error?.message || 'Could not update status.';
-        this.selectedStatus = this.order!.status; // revert on error
+        this.selectedStatus = this.order!.status;
       }
     });
   }
 
   // ─────────────────────────────────────────────
-  // CANCEL (calls status update)
+  // CANCEL
   // ─────────────────────────────────────────────
 
   cancelOrder(): void {
@@ -173,8 +174,17 @@ export class OrderDetailComponent implements OnInit {
   // ─────────────────────────────────────────────
 
   getSubtotal(): number {
-    if (!this.order) return 0;
-    return (this.order.totalAmount || 0) - (this.order.shippingCharge || 0);
+    if (!this.order?.items?.length) return 0;
+    return this.order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+  }
+
+  getTotalAmount(): number {
+    return this.order?.payment?.amount ?? this.getSubtotal();
+  }
+
+  getShippingCharge(): number {
+    const diff = this.getTotalAmount() - this.getSubtotal();
+    return diff > 0 ? diff : 0;
   }
 
   resolveImage(url: string): string {

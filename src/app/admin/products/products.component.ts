@@ -93,7 +93,7 @@ export class AdminProductsComponent implements OnInit {
     if (this.filters.filterTrending)      params = params.set('trending', this.filters.filterTrending);
     if (this.filters.filterStatus)        params = params.set('status',   this.filters.filterStatus);
 
-    this.http.get<ProductPage>(`${environment.apiUrl}/admin/getallproducts`, { headers, params })
+    this.http.get<ProductPage>(`${environment.apiUrl}/product/getallproducts`, { headers, params })
       .subscribe({
         next: (res) => {
           this.products      = res.content;

@@ -1,14 +1,14 @@
 // admin/admin-layout/admin-layout.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule }                  from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 
 interface MenuItem {
-  id?:     string;
-  label:   string;
-  icon?:   string;
-  route?:  string;
+  id?: string;
+  label: string;
+  icon?: string;
+  route?: string;
   action?: string;
 }
 
@@ -17,32 +17,34 @@ interface MenuItem {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterOutlet, RouterLinkActive],
   templateUrl: './admin-layout.component.html',
-  styleUrl:    './admin-layout.component.css'
+  styleUrl: './admin-layout.component.css',
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
-
   // ── Sidebar state ─────────────────────────────
-  sidebarCollapsed  = false;
+  sidebarCollapsed = false;
   mobileSidebarOpen = false;
 
   // ── Admin info ────────────────────────────────
-  adminEmail    = localStorage.getItem('admin_email') || 'admin@khilatkurti.com';
+  adminEmail = localStorage.getItem('admin_email') || 'admin@khilatkurti.com';
   adminInitials = this.getInitials(this.adminEmail);
 
   // ── Page title ────────────────────────────────
   currentPageTitle = 'Dashboard';
   today = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   });
 
   // ── Menu — id field se HTML mein SVG icon match hoga ──
   menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', route: '/admin/dashboard' },
-    { id: 'products',  label: 'Products',  route: '/admin/products'  },
-    { id: 'orders',    label: 'Orders',    route: '/admin/orders'    },
-    { id: 'customers', label: 'Customers', route: '/admin/customers' },
-    { id: 'settings',  label: 'Settings',  route: '/admin/settings'  },
-    { id: 'logout',    label: 'Logout',    action: 'logout'          },
+    { id: 'products', label: 'Products', route: '/admin/products' },
+    { id: 'orders', label: 'Orders', route: '/admin/orders' },
+    { id: 'categories', label: 'Categories', route: '/admin/categories' },
+    { id: 'settings', label: 'Settings', route: '/admin/settings' },
+    { id: 'logout', label: 'Logout', action: 'logout' },
   ];
 
   private routerSub!: Subscription;
@@ -51,7 +53,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.routerSub = this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
+      .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe(() => this.updatePageTitle());
 
     this.updatePageTitle();
@@ -85,7 +87,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   // ── Page title from URL ───────────────────────
   private updatePageTitle(): void {
     const url = this.router.url;
-    const match = this.menuItems.find(item => item.route && url.startsWith(item.route));
+    const match = this.menuItems.find((item) => item.route && url.startsWith(item.route));
     this.currentPageTitle = match?.label || 'Admin Panel';
   }
 

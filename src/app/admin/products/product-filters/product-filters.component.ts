@@ -35,6 +35,7 @@ export class ProductFiltersComponent {
 
   handleFilterChange(): void {
     this.filtersChange.emit({ ...this.filters });
+    this.onSearch.emit(); // parent ko loadProducts() call karne ka signal
   }
 
   handleClearSearch(): void {

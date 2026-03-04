@@ -18,9 +18,12 @@ export class ProductCardComponent implements OnInit {
   @Input() badgeLabel = '';
   @Input() badgeClass = 'badge-trending';
   @Input() inCart     = false;
+  @Input() qty        = 1;
 
   @Output() productClick = new EventEmitter<number>();
   @Output() addToCart    = new EventEmitter<any>();
+  @Output() increment    = new EventEmitter<number>();
+  @Output() decrement    = new EventEmitter<number>();
 
   selectedSize: string = '';
   cartState: 'idle' | 'loading' | 'added' = 'idle';
@@ -33,6 +36,9 @@ export class ProductCardComponent implements OnInit {
   constructor(private cartService: CartService) {}
 
   ngOnInit(): void {
+    // Sync localQty from parent-passed qty
+    this.localQty = this.qty ?? 1;
+
     // Auto-select first available size
     const first = this.product?.variants?.find((v: any) => v.stock > 0);
     if (first) this.selectedSize = first.size;
@@ -42,11 +48,17 @@ export class ProductCardComponent implements OnInit {
 
   incrementQty(): void {
     const maxStock = this.selectedVariant?.stock ?? 99;
-    if (this.localQty < maxStock) this.localQty++;
+    if (this.localQty < maxStock) {
+      this.localQty++;
+      this.increment.emit(this.product?.id);
+    }
   }
 
   decrementQty(): void {
-    if (this.localQty > 1) this.localQty--;
+    if (this.localQty > 1) {
+      this.localQty--;
+      this.decrement.emit(this.product?.id);
+    }
   }
 
   // ── Computed getters ────────────────────────────────────────────────────────

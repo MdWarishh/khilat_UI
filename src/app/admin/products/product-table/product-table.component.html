@@ -91,14 +91,14 @@
             </td>
 
             <!-- Variant count -->
-            <td>
-              <span class="variant-count">{{ p.variants?.length ?? 0 }} sizes</span>
-            </td>
+        <td>
+  <span class="variant-count">{{ p.variants.length }} sizes</span>
+</td>
 
             <!-- Trending -->
             <td>
               <span class="trending-chip" [class.yes]="p.trending === 'YES'">
-                {{ p.trending === 'YES' ? '🔥 Yes' : 'No' }}
+                {{ p.trending === 'YES' ? 'Y' : 'N' }}
               </span>
             </td>
 

@@ -17,21 +17,7 @@
     <!-- Category Filter -->
     <select class="filter-select" [(ngModel)]="filters.filterCategory" (change)="handleFilterChange()">
       <option value="">All Categories</option>
-      <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
-    </select>
-
-    <!-- Trending Filter -->
-    <select class="filter-select" [(ngModel)]="filters.filterTrending" (change)="handleFilterChange()">
-      <option value="">All Products</option>
-      <option value="y">Trending Only</option>
-      <option value="n">Regular Only</option>
-    </select>
-
-    <!-- Status Filter -->
-    <select class="filter-select" [(ngModel)]="filters.filterStatus" (change)="handleFilterChange()">
-      <option value="">All Status</option>
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
+      <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
     </select>
 
   </div>

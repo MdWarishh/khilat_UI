@@ -58,11 +58,11 @@
                      placeholder="House no, Street name">
             </div>
 
-            <div class="form-group">
+            <!-- <div class="form-group">
               <label>Address Line 2 <span class="optional">(optional)</span></label>
               <input type="text" [(ngModel)]="form.addressLine2" name="addressLine2"
                      placeholder="Landmark, Area">
-            </div>
+            </div> -->
 
             <div class="form-row form-row-3">
               <div class="form-group">
@@ -109,7 +109,7 @@
             <div class="address-icon">📦</div>
             <div>
               <strong>{{ form.fullName }}</strong>
-              <p>{{ form.addressLine1 }}<span *ngIf="form.addressLine2">, {{ form.addressLine2 }}</span></p>
+              <p>{{ form.addressLine1 }}></p>
               <p>{{ form.city }}, {{ form.state }} - {{ form.pincode }}</p>
               <p>{{ form.phone }} | {{ form.email }}</p>
             </div>

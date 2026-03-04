@@ -15,7 +15,7 @@
     <div class="detail-body">
 
       <!-- Images -->
-      <div class="detail-images" *ngIf="product!.productImages?.length">
+      <div class="detail-images" *ngIf="product!.productImages.length">
         <div class="main-img-wrap">
           <img [src]="resolveImage(product!.productImages[activeImageIndex]?.imageUrl ?? '')"
                [alt]="product!.name" class="main-img">
@@ -28,7 +28,7 @@
           </div>
         </div>
       </div>
-      <div class="no-image-box" *ngIf="!product!.productImages?.length">
+      <div class="no-image-box" *ngIf="!product!.productImages.length">
         <span>📷</span><p>No images uploaded</p>
       </div>
 
@@ -61,7 +61,7 @@
           </div>
           <div class="detail-item">
             <span class="di-label">Category</span>
-            <span class="di-val">{{ product!.category?.name || '—' }}</span>
+            <span class="di-val">{{ product!.category.name || '—' }}</span>
           </div>
           <div class="detail-item">
             <span class="di-label">Added On</span>
@@ -70,7 +70,7 @@
         </div>
 
         <!-- Variants Table -->
-        <div class="variants-section" *ngIf="product!.variants?.length">
+        <div class="variants-section" *ngIf="product!.variants.length">
           <p class="variants-heading">Size Variants</p>
           <table class="variants-table">
             <thead>

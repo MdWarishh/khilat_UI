@@ -42,15 +42,19 @@
 
       <div class="od-header-right">
 
-        <!-- ── STATUS DROPDOWN ── -->
+        <!-- STATUS DROPDOWN — only PENDING / CONFIRMED allowed -->
         <div class="od-status-wrap">
           <select
             class="od-status-select"
             [ngClass]="'ss-' + order.status"
             [(ngModel)]="selectedStatus"
             (change)="onStatusChange()"
-            [disabled]="statusUpdating || actionLoading">
+            [disabled]="statusUpdating || actionLoading || order.status === 'CANCELLED' || order.status === 'DISPATCHED' || order.status === 'DELIVERED'">
             <option *ngFor="let s of allStatuses" [value]="s">{{ s }}</option>
+            <!-- Show current status as readonly option if it's beyond CONFIRMED -->
+            <option *ngIf="order.status === 'DISPATCHED'" value="DISPATCHED">DISPATCHED</option>
+            <option *ngIf="order.status === 'DELIVERED'" value="DELIVERED">DELIVERED</option>
+            <option *ngIf="order.status === 'CANCELLED'" value="CANCELLED">CANCELLED</option>
           </select>
           <span class="od-status-saving" *ngIf="statusUpdating">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -64,26 +68,7 @@
           </span>
         </div>
 
-        <!-- Dispatch button (only for PENDING / CONFIRMED) -->
-        <button class="od-action-btn od-dispatch"
-                *ngIf="order.status === 'PENDING' || order.status === 'CONFIRMED'"
-                (click)="dispatchOrder()"
-                [disabled]="actionLoading || statusUpdating">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-          {{ actionLoading ? 'Dispatching...' : 'Dispatch' }}
-        </button>
-
-        <!-- Dispatched indicator -->
-        <span class="od-dispatched-ok" *ngIf="order.status === 'DISPATCHED'">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Dispatched
-        </span>
-
-        <!-- Cancel button -->
+        <!-- Cancel button — visible if not already cancelled/delivered -->
         <button class="od-action-btn od-cancel"
                 *ngIf="order.status !== 'CANCELLED' && order.status !== 'DELIVERED'"
                 (click)="cancelOrder()"
@@ -91,10 +76,15 @@
           Cancel Order
         </button>
 
+        <!-- Cancelled badge -->
+        <span class="od-dispatched-ok od-cancelled-badge" *ngIf="order.status === 'CANCELLED'">
+          ✕ Cancelled
+        </span>
+
       </div>
     </div>
 
-    <!-- ── ACTION ERROR ── -->
+    <!-- ACTION ERROR -->
     <div class="od-action-error" *ngIf="actionError">
       ⚠ {{ actionError }}
       <button (click)="actionError = ''">✕</button>
@@ -114,12 +104,12 @@
               <line x1="3" y1="6" x2="21" y2="6"/>
             </svg>
             <h3>Ordered Items</h3>
-            <span class="od-item-count">{{ order.orderItems?.length || 0 }} items</span>
+            <span class="od-item-count">{{ order.items.length || 0 }} items</span>
           </div>
 
           <div class="od-items">
             <div class="od-item"
-                 *ngFor="let item of order.orderItems; let i = index"
+                 *ngFor="let item of order.items; let i = index"
                  [style.animation-delay]="(i * 0.06) + 's'">
               <div class="od-item-img">
                 <img *ngIf="item.imageUrl"
@@ -130,9 +120,19 @@
               </div>
               <div class="od-item-info">
                 <span class="od-item-name">{{ item.productName }}</span>
-                <span class="od-item-meta">₹{{ item.price }} × {{ item.quantity }}</span>
+                <span class="od-item-meta">
+                  ₹{{ item.price }} × {{ item.quantity }}
+                  <span *ngIf="item.size"> · Size: {{ item.size }}</span>
+                  <span *ngIf="item.color"> · {{ item.color }}</span>
+                  <span *ngIf="item.categoryName"> · {{ item.categoryName }}</span>
+                </span>
               </div>
               <div class="od-item-total">₹{{ item.price * item.quantity | number:'1.0-0' }}</div>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="!order.items || order.items.length === 0" class="od-empty-items">
+              No items found.
             </div>
           </div>
 
@@ -144,13 +144,13 @@
             </div>
             <div class="od-price-row">
               <span>Shipping</span>
-              <span class="od-free" *ngIf="order.shippingCharge === 0">FREE</span>
-              <span *ngIf="order.shippingCharge > 0">₹{{ order.shippingCharge }}</span>
+              <span class="od-free" *ngIf="getShippingCharge() === 0">FREE</span>
+              <span *ngIf="getShippingCharge() > 0">₹{{ getShippingCharge() | number:'1.0-0' }}</span>
             </div>
             <div class="od-price-divider"></div>
             <div class="od-price-row od-total-row">
               <span>Total</span>
-              <span class="od-total-val">₹{{ order.totalAmount | number:'1.0-0' }}</span>
+              <span class="od-total-val">₹{{ getTotalAmount() | number:'1.0-0' }}</span>
             </div>
           </div>
         </div>
@@ -194,17 +194,17 @@
           <div class="od-info-list">
             <div class="od-info-row">
               <span class="od-info-lbl">Name</span>
-              <span class="od-info-val">{{ order.customerName }}</span>
+              <span class="od-info-val">{{ order.name || '—' }}</span>
             </div>
             <div class="od-info-row">
               <span class="od-info-lbl">Email</span>
-              <span class="od-info-val">{{ order.customerEmail || '—' }}</span>
+              <span class="od-info-val">{{ order.email || '—' }}</span>
             </div>
             <div class="od-info-row">
               <span class="od-info-lbl">Phone</span>
-              <span class="od-info-val">{{ order.customerPhone || '—' }}</span>
+              <span class="od-info-val">{{ order.phone || '—' }}</span>
             </div>
-            <div class="od-info-row">
+            <div class="od-info-row" *ngIf="order.guestId">
               <span class="od-info-lbl">Guest ID</span>
               <span class="od-info-val od-mono">{{ order.guestId }}</span>
             </div>
@@ -220,7 +220,7 @@
             </svg>
             <h3>Shipping Address</h3>
           </div>
-          <div class="od-address">{{ order.address }}</div>
+          <div class="od-address">{{ order.address || '—' }}</div>
         </div>
 
         <!-- Payment Card -->
@@ -234,12 +234,27 @@
           </div>
           <div class="od-info-list">
             <div class="od-info-row">
-              <span class="od-info-lbl">Method</span>
-              <span class="od-info-val">{{ order.paymentMethod || 'Stripe' }}</span>
+              <span class="od-info-lbl">Status</span>
+              <span class="od-info-val">
+                <span *ngIf="order.payment?.paymentstatus === 'SUCCESS'" style="color:#15803d;font-weight:600;">
+                  ✓ {{ order.payment?.paymentstatus }}
+                </span>
+                <span *ngIf="order.payment?.paymentstatus !== 'SUCCESS'">
+                  {{ order.payment?.paymentstatus || '—' }}
+                </span>
+              </span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Amount Paid</span>
+              <span class="od-info-val">₹{{ order.payment?.amount | number:'1.0-0' }}</span>
+            </div>
+            <div class="od-info-row">
+              <span class="od-info-lbl">Payment Date</span>
+              <span class="od-info-val">{{ order.payment?.createdAt | date:'dd MMM yyyy, h:mm a' }}</span>
             </div>
             <div class="od-info-row">
               <span class="od-info-lbl">Order Date</span>
-              <span class="od-info-val">{{ order.createdAt | date:'dd MMM yyyy' }}</span>
+              <span class="od-info-val">{{ order.createdAt | date:'dd MMM yyyy, h:mm a' }}</span>
             </div>
           </div>
         </div>
