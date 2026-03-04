@@ -175,7 +175,7 @@ export class OrderDetailComponent implements OnInit {
 
   getSubtotal(): number {
     if (!this.order?.items?.length) return 0;
-    return this.order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    return this.order.items.reduce((sum, i) => sum + (i.price ), 0);
   }
 
   getTotalAmount(): number {
