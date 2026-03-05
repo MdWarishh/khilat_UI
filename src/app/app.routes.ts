@@ -1,5 +1,5 @@
 // src/app/app.routes.ts
-import { Routes }              from '@angular/router';
+import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 
 // ── Auth Guard ─────────────────────────────────────────────────────
@@ -10,55 +10,66 @@ const adminGuard = () => {
 };
 
 export const routes: Routes = [
-
   // ──────────────── User / Public Routes ────────────────
   {
     path: '',
-    loadComponent: () => import('./components/home/home').then(m => m.Home),
+    loadComponent: () => import('./components/home/home').then((m) => m.Home),
   },
   {
     path: 'about',
-    loadComponent: () => import('./components/about/about').then(m => m.About),
+    loadComponent: () => import('./components/about/about').then((m) => m.About),
   },
   {
     path: 'categories-products',
-    loadComponent: () => import('./components/category-products/category-products.component').then(m => m.CategoryProductsComponent),
+    loadComponent: () =>
+      import('./components/category-products/category-products.component').then(
+        (m) => m.CategoryProductsComponent,
+      ),
   },
   {
     path: 'contact',
-    loadComponent: () => import('./components/contact/contact').then(m => m.Contact),
+    loadComponent: () => import('./components/contact/contact').then((m) => m.Contact),
   },
   {
     path: 'category-products',
-    loadComponent: () => import('./components/category-products/category-products.component').then(m => m.CategoryProductsComponent),
+    loadComponent: () =>
+      import('./components/category-products/category-products.component').then(
+        (m) => m.CategoryProductsComponent,
+      ),
   },
   {
     path: 'products',
-    loadComponent: () => import('./components/all-products/all-products.component').then(m => m.AllProductsComponent),
+    loadComponent: () =>
+      import('./components/all-products/all-products.component').then(
+        (m) => m.AllProductsComponent,
+      ),
   },
   {
     path: 'products/:id',
-    loadComponent: () => import('./components/product-detail/product-detail').then(m => m.ProductDetail),
+    loadComponent: () =>
+      import('./components/product-detail/product-detail').then((m) => m.ProductDetail),
   },
   {
     path: 'cart',
-    loadComponent: () => import('./components/cart/cart').then(m => m.Cart),
+    loadComponent: () => import('./components/cart/cart').then((m) => m.Cart),
   },
   {
     path: 'checkout',
-    loadComponent: () => import('./components/checkout/checkout').then(m => m.Checkout),
+    loadComponent: () => import('./components/checkout/checkout.component').then((m) => m.Checkout),
   },
   {
     path: 'order-success',
-    loadComponent: () => import('./components/order-success/order-success.component').then(m => m.OrderSuccessComponent),
+    loadComponent: () =>
+      import('./components/order-success/order-success.component').then(
+        (m) => m.OrderSuccessComponent,
+      ),
   },
-  
 
   // ──────────────── Admin Routes ────────────────
   // Login page — NO admin layout (no navbar/footer)
   {
     path: 'admin/login',
-    loadComponent: () => import('./admin/login/login.component').then(m => m.AdminLoginComponent),
+    loadComponent: () => import('./admin/login/login.component').then((m) => m.AdminLoginComponent),
   },
 
   // Admin panel — AdminLayoutComponent wraps all child pages
@@ -70,19 +81,42 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        loadComponent: () =>
+          import('./admin/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'products',
-        loadComponent: () => import('./admin/products/products.component').then(m => m.AdminProductsComponent),
+        loadComponent: () =>
+          import('./admin/products/products.component').then((m) => m.AdminProductsComponent),
       },
-       { path: 'orders',    loadComponent: () => import('./admin/orders/orders.component').then(m => m.AdminOrdersComponent) },
-       { path: 'orders/:id',    loadComponent: () => import('./admin/order-detail/order-detail.component').then(m => m.OrderDetailComponent) },
-        { path: 'dispatched',    loadComponent: () => import('./admin/dispatched/dispatched-orders/dispatched-orders.component').then(m => m.DispatchedOrdersComponent) },
-        { path: 'dispatched/:id',    loadComponent: () => import('./admin/dispatched/dispatched-order-detail/dispatched-order-detail.component').then(m => m.DispatchedOrderDetailComponent) },
-        {
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./admin/orders/orders.component').then((m) => m.AdminOrdersComponent),
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () =>
+          import('./admin/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
+      },
+      {
+        path: 'dispatched',
+        loadComponent: () =>
+          import('./admin/dispatched/dispatched-orders/dispatched-orders.component').then(
+            (m) => m.DispatchedOrdersComponent,
+          ),
+      },
+      {
+        path: 'dispatched/:id',
+        loadComponent: () =>
+          import('./admin/dispatched/dispatched-order-detail/dispatched-order-detail.component').then(
+            (m) => m.DispatchedOrderDetailComponent,
+          ),
+      },
+      {
         path: 'categories',
-        loadComponent: () => import('./admin/categories/categories.component').then(m => m.CategoriesComponent),
+        loadComponent: () =>
+          import('./admin/categories/categories.component').then((m) => m.CategoriesComponent),
       },
       {
         path: '',

@@ -17,13 +17,11 @@ export class Header implements OnInit, OnDestroy {
   private router      = inject(Router);
 
   isScrolled     = false;
-  dropdownOpen   = false;
   mobileMenuOpen = false;
   mobileCatOpen  = false;
   cartCount      = 0;
   cartBump       = false;
 
-  private dropdownTimer: any;
   private cartSub!: Subscription;
   private prevCount = 0;
 
@@ -45,13 +43,11 @@ export class Header implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cartSub?.unsubscribe();
-    clearTimeout(this.dropdownTimer);
   }
 
-  // ── Categories → home page ke #categories section me scroll ──
+  // Categories → home page #categories section scroll
   goToCategories(): void {
     this.closeMobileMenu();
-    this.closeDropdown();
     if (this.router.url === '/' || this.router.url === '') {
       this._scrollTo();
     } else {
@@ -63,23 +59,18 @@ export class Header implements OnInit, OnDestroy {
     document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // ── Dropdown ─────────────────────────────────────────────────
-  openDropdown(): void  { clearTimeout(this.dropdownTimer); this.dropdownOpen = true; }
-  closeDropdown(): void { this.dropdownTimer = setTimeout(() => (this.dropdownOpen = false), 150); }
-
-  // ── Mobile ───────────────────────────────────────────────────
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
     if (!this.mobileMenuOpen) this.mobileCatOpen = false;
   }
+
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
     this.mobileCatOpen  = false;
-    this.dropdownOpen   = false;
   }
+
   toggleMobileCategories(): void { this.mobileCatOpen = !this.mobileCatOpen; }
 
-  // ── Scroll ───────────────────────────────────────────────────
   @HostListener('window:scroll')
   onScroll(): void { this.isScrolled = window.scrollY > 20; }
 }

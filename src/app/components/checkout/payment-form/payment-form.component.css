@@ -1,0 +1,136 @@
+/* src/app/components/checkout/payment-form/payment-form.component.css */
+.pf-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Header */
+.pf-header {
+  display: flex; align-items: center;
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.pf-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; color: #1C1C1C; margin: 0;
+}
+.btn-back {
+  background: none; border: 1px solid #ddd;
+  padding: 6px 14px; border-radius: 20px;
+  cursor: pointer; font-size: 0.85rem;
+  color: #5A4A4A; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif; white-space: nowrap;
+}
+.btn-back:hover { border-color: #1C1C1C; color: #1C1C1C; }
+
+/* Address recap */
+.pf-address-recap {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #FFF5E4; border-radius: 12px;
+  padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+  border: 1px solid rgba(255,148,148,0.2);
+}
+.recap-icon { font-size: 1.5rem; flex-shrink: 0; }
+.recap-body strong { font-size: 0.9rem; color: #1C1C1C; display: block; margin-bottom: 3px; }
+.recap-body p { font-size: 0.82rem; color: #5A4A4A; line-height: 1.5; }
+.recap-contact { color: #9A8A8A !important; margin-top: 2px; }
+
+/* Stripe wrapper */
+.stripe-element-wrap {
+  min-height: 200px; margin-bottom: 1.5rem;
+  border-radius: 12px; overflow: hidden;
+}
+.stripe-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 2rem; color: #9A8A8A; font-size: 0.88rem;
+}
+
+/* ── Error Banners ── */
+.pf-error {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; border-radius: 12px;
+  margin-bottom: 1.1rem;
+  animation: slideIn 0.25s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pf-error-icon {
+  flex-shrink: 0; width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.pf-error-body strong {
+  display: block; font-size: 0.88rem;
+  font-weight: 600; margin-bottom: 2px;
+}
+.pf-error-body p {
+  font-size: 0.82rem; line-height: 1.45; margin: 0;
+}
+
+/* Declined — red */
+.pf-error-declined {
+  background: rgba(220,38,38,0.05);
+  border: 1px solid rgba(220,38,38,0.18);
+}
+.pf-error-declined .pf-error-icon {
+  background: rgba(220,38,38,0.1); color: #dc2626;
+}
+.pf-error-declined .pf-error-body strong { color: #dc2626; }
+.pf-error-declined .pf-error-body p      { color: #7f1d1d; }
+
+/* Validation — amber */
+.pf-error-validation {
+  background: rgba(245,158,11,0.05);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.pf-error-validation .pf-error-icon {
+  background: rgba(245,158,11,0.1); color: #d97706;
+}
+.pf-error-validation .pf-error-body strong { color: #92400e; }
+.pf-error-validation .pf-error-body p      { color: #78350f; }
+
+/* Generic — slate */
+.pf-error-generic {
+  background: rgba(90,74,74,0.05);
+  border: 1px solid rgba(90,74,74,0.15);
+}
+.pf-error-generic .pf-error-icon {
+  background: rgba(90,74,74,0.08); color: #5A4A4A;
+}
+.pf-error-generic .pf-error-body strong { color: #1C1C1C; }
+.pf-error-generic .pf-error-body p      { color: #5A4A4A; }
+
+/* Pay button */
+.btn-pay {
+  width: 100%; padding: 16px;
+  background: #1C1C1C; color: white;
+  border: none; border-radius: 30px;
+  font-size: 1.05rem; font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-pay:hover:not(:disabled) {
+  background: #e87575;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255,100,100,0.25);
+}
+.btn-pay:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+
+.btn-loading { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+  border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pf-secure-note {
+  text-align: center; font-size: 0.75rem;
+  color: #9A8A8A; margin-top: 1rem;
+}

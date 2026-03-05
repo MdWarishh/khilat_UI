@@ -23,22 +23,10 @@
              [routerLinkActiveOptions]="{ exact: true }">Home</a>
         </li>
 
-        <!-- Categories — hover dropdown, click scrolls to #categories -->
-        <li class="dropdown-wrapper">
-          <a class="nav-link dropdown-trigger" (click)="goToCategories()">
-            Categories
+        <li>
+          <a class="nav-link" (click)="goToCategories()">
+            <span>Categories</span>
           </a>
-
-          <!-- Dropdown — sirf click prompt, koi API nahi -->
-          <div class="dropdown-menu" [class.open]="dropdownOpen">
-            <div class="dropdown-inner">
-              <div class="dropdown-header">Shop by Category</div>
-              <a class="dropdown-item" (click)="goToCategories()">
-                <span class="item-dot">✦</span>
-                <span>View All Categories</span>
-              </a>
-            </div>
-          </div>
         </li>
 
         <li>

@@ -1,0 +1,46 @@
+<!-- src/app/admin/dashboard/recent-orders/recent-orders.component.html -->
+<div class="ro-card">
+
+  <div class="ro-head">
+    <div>
+      <h3 class="ro-title">Recent Orders</h3>
+      <p class="ro-sub">Latest 5 orders</p>
+    </div>
+    <a routerLink="/admin/orders" class="ro-view-all">View all →</a>
+  </div>
+
+  <div class="ro-list">
+
+    <div class="ro-empty" *ngIf="orders.length === 0">
+      <span>📦</span>
+      <p>No orders yet</p>
+    </div>
+
+    <div class="ro-item" *ngFor="let order of orders; let i = index"
+         [routerLink]="['/admin/orders', order.orderId]"
+         [style.animation-delay]="(i * 0.07) + 's'">
+
+      <!-- Avatar -->
+      <div class="ro-avatar">{{ initials(order.name) }}</div>
+
+      <!-- Info -->
+      <div class="ro-info">
+        <span class="ro-name">{{ order.name }}</span>
+        <span class="ro-meta">
+          #{{ order.orderId }} · {{ order.createdAt | date:'dd MMM, h:mm a' }}
+        </span>
+      </div>
+
+      <!-- Right side -->
+      <div class="ro-right">
+        <span class="ro-amount">₹{{ order.amount | number:'1.0-0' }}</span>
+        <span class="ro-badge" [ngClass]="getStatusClass(order.orderStatus)">
+          {{ order.orderStatus }}
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

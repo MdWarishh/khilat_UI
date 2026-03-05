@@ -1,0 +1,37 @@
+<!-- src/app/components/checkout/order-summary/order-summary.component.html -->
+<div class="os-card">
+  <h3 class="os-title">Order Summary</h3>
+
+  <div class="os-items">
+    <div class="os-item" *ngFor="let item of cartItems">
+      <div class="os-item-info">
+        <span class="os-item-name">{{ item.productName }}</span>
+        <span class="os-item-meta">Qty: {{ item.quantity }} · Size: {{ item.size }}</span>
+      </div>
+      <span class="os-item-price">₹{{ getItemTotal(item) }}</span>
+    </div>
+  </div>
+
+  <div class="os-divider"></div>
+
+  <div class="os-row">
+    <span>Subtotal</span>
+    <span>₹{{ subtotal }}</span>
+  </div>
+  <div class="os-row">
+    <span>Shipping</span>
+    <span *ngIf="shipping === 0" class="os-free">FREE</span>
+    <span *ngIf="shipping > 0">₹{{ shipping }}</span>
+  </div>
+
+  <div class="os-divider"></div>
+
+  <div class="os-row os-total">
+    <span>Total</span>
+    <span>₹{{ total }}</span>
+  </div>
+
+  <div class="os-shipping-nudge" *ngIf="subtotal < 999">
+    🚚 Add ₹{{ 999 - subtotal }} more for free shipping
+  </div>
+</div>

@@ -1,0 +1,91 @@
+<!-- src/app/components/checkout/payment-form/payment-form.component.html -->
+<div class="pf-card">
+
+  <!-- Header -->
+  <div class="pf-header">
+    <button class="btn-back" (click)="onGoBack()" type="button">← Back</button>
+    <h2 class="pf-title">Secure Payment</h2>
+  </div>
+
+  <!-- Address recap -->
+  <div class="pf-address-recap">
+    <div class="recap-icon">📦</div>
+    <div class="recap-body">
+      <strong>{{ form.fullName }}</strong>
+      <p>{{ form.addressLine1 }}</p>
+      <p>{{ form.city }}, {{ form.state }} – {{ form.pincode }}</p>
+      <p class="recap-contact">{{ form.phone }} · {{ form.email }}</p>
+    </div>
+  </div>
+
+  <!-- Stripe Payment Element -->
+  <div id="stripe-payment-element" class="stripe-element-wrap">
+    <div class="stripe-loading" *ngIf="!stripeReady">
+      <span class="spinner"></span>
+      Loading secure payment form...
+    </div>
+  </div>
+
+  <!-- ── Error Banners ── -->
+
+  <!-- Card Declined -->
+  <div class="pf-error pf-error-declined" *ngIf="errorMessage && errorType === 'declined'">
+    <div class="pf-error-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+        <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
+        <line x1="17" y1="14" x2="9" y2="14" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="pf-error-body">
+      <strong>Card Declined</strong>
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Validation Error (wrong number/CVV/expiry) -->
+  <div class="pf-error pf-error-validation" *ngIf="errorMessage && errorType === 'validation'">
+    <div class="pf-error-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3"/>
+      </svg>
+    </div>
+    <div class="pf-error-body">
+      <strong>Check Card Details</strong>
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Generic Error -->
+  <div class="pf-error pf-error-generic" *ngIf="errorMessage && errorType === 'generic'">
+    <div class="pf-error-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="3"/>
+      </svg>
+    </div>
+    <div class="pf-error-body">
+      <strong>Payment Failed</strong>
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Pay button -->
+  <button class="btn-pay" (click)="confirmPayment()"
+          [disabled]="stripeLoading || !stripeReady" type="button">
+    <span *ngIf="!stripeLoading">🔒 Pay ₹{{ total }}</span>
+    <span *ngIf="stripeLoading" class="btn-loading">
+      <span class="spinner"></span> Processing...
+    </span>
+  </button>
+
+  <p class="pf-secure-note">🔒 Secured by Stripe. We never store your card details.</p>
+
+</div>

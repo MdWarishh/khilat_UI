@@ -1,0 +1,124 @@
+/* src/app/admin/dashboard/stats-cards/stats-cards.component.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+/* Base card */
+.sc-card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 1.4rem 1.5rem;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+  text-decoration: none; color: inherit;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: cardIn 0.5s ease both;
+}
+.sc-card:nth-child(1) { animation-delay: 0.05s; }
+.sc-card:nth-child(2) { animation-delay: 0.10s; }
+.sc-card:nth-child(3) { animation-delay: 0.15s; }
+.sc-card:nth-child(4) { animation-delay: 0.20s; }
+.sc-card:nth-child(5) { animation-delay: 0.25s; }
+.sc-card:nth-child(6) { animation-delay: 0.30s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+a.sc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.10);
+}
+
+/* Left accent bar */
+.sc-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+
+/* Top row: icon + label */
+.sc-top {
+  display: flex; align-items: center; gap: 10px;
+}
+.sc-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sc-label {
+  font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.8px; color: #9A8A8A;
+}
+
+/* Value */
+.sc-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem; font-weight: 600; color: #1C1C1C; line-height: 1;
+}
+.sc-rev-val { font-size: 1.65rem; }
+
+/* Mini link hint */
+.sc-link-hint {
+  font-size: 0.72rem; color: #9A8A8A;
+  margin-top: auto;
+  transition: color 0.2s ease;
+}
+a.sc-card:hover .sc-link-hint { color: #1C1C1C; }
+
+.sc-note {
+  font-size: 0.68rem; color: #9A8A8A; margin-top: auto;
+}
+
+/* Progress bar (for pending) */
+.sc-bar-wrap {
+  height: 4px; background: rgba(245,158,11,0.12);
+  border-radius: 99px; overflow: hidden; margin-top: 4px;
+}
+.sc-bar {
+  height: 100%; border-radius: 99px;
+  background: #f59e0b;
+  transition: width 0.8s ease;
+}
+
+/* ── Color themes ── */
+
+/* Orders — slate dark */
+.sc-orders::before      { background: #1C1C1C; }
+.sc-orders .sc-icon     { background: rgba(28,28,28,0.07); color: #1C1C1C; }
+
+/* Pending — amber */
+.sc-pending::before     { background: #f59e0b; }
+.sc-pending .sc-icon    { background: rgba(245,158,11,0.1); color: #b45309; }
+
+/* Dispatched — violet */
+.sc-dispatched::before  { background: #7c3aed; }
+.sc-dispatched .sc-icon { background: rgba(139,92,246,0.1); color: #6d28d9; }
+
+/* Revenue — pink/rose */
+.sc-revenue::before     { background: #FF9494; }
+.sc-revenue .sc-icon    { background: rgba(255,148,148,0.12); color: #e87575; }
+.sc-revenue             { cursor: default; }
+
+/* Products — teal */
+.sc-products::before    { background: #0d9488; }
+.sc-products .sc-icon   { background: rgba(13,148,136,0.1); color: #0d9488; }
+
+/* Categories — blue */
+.sc-categories::before  { background: #3b82f6; }
+.sc-categories .sc-icon { background: rgba(59,130,246,0.1); color: #1d4ed8; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) { .sc-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) {
+  .sc-grid   { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .sc-value  { font-size: 2rem; }
+  .sc-card   { padding: 1.1rem; }
+}

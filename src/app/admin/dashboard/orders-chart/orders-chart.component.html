@@ -1,0 +1,51 @@
+<!-- src/app/admin/dashboard/orders-chart/orders-chart.component.html -->
+<div class="chart-card">
+
+  <!-- Header -->
+  <div class="chart-head">
+    <div class="chart-head-left">
+      <h3 class="chart-title">Orders — Last 7 Days</h3>
+      <p class="chart-sub">Daily order volume overview</p>
+    </div>
+    <div class="chart-head-right">
+      <div class="chart-stat">
+        <span class="cstat-val">{{ totalOrders }}</span>
+        <span class="cstat-lbl">Orders</span>
+      </div>
+      <div class="chart-stat">
+        <span class="cstat-val">₹{{ totalRevenue | number:'1.0-0' }}</span>
+        <span class="cstat-lbl">Revenue</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bar chart -->
+  <div class="chart-body">
+    <div class="bar-chart">
+      <div class="bar-col" *ngFor="let bar of bars; let i = index">
+        <div class="bar-value-wrap">
+          <span class="bar-count" *ngIf="bar.count > 0">{{ bar.count }}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill"
+               [style.height]="bar.pct + '%'"
+               [style.animation-delay]="(i * 0.07) + 's'"
+               [class.bar-active]="bar.count === maxCount && maxCount > 0">
+          </div>
+        </div>
+        <span class="bar-label">{{ bar.label }}</span>
+        <span class="bar-date">{{ bar.date }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="chart-footer">
+    <div class="chart-legend">
+      <span class="legend-dot"></span>
+      <span class="legend-text">Orders per day</span>
+    </div>
+    <span class="chart-note">Showing data from last 100 orders</span>
+  </div>
+
+</div>

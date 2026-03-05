@@ -119,20 +119,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addToCart(product: any): void {
-    const variantId = product.selectedVariant?.id as number;
-    if (!variantId || this.cartedProducts[product.id]) return;
-
-    const qty = this.pendingQuantities[product.id] ?? 1;
-
-    // ✅ addItem(variantId, qty) — 2 arguments only, matches fixed cart.service.ts
-    this.cartService.addItem(variantId, qty).subscribe({
-      next: () => {
-        const { [product.id]: _, ...rest } = this.pendingQuantities;
-        this.pendingQuantities = rest;
-        this.cartedProducts    = { ...this.cartedProducts, [product.id]: true };
-      },
-      error: (err: any) => console.error('Add to cart failed:', err),
-    });
+    // product-card already called cartService.addItem() internally.
+    // Home just needs to update local state to reflect the cart change.
+    if (!product?.id) return;
+    const { [product.id]: _, ...rest } = this.pendingQuantities;
+    this.pendingQuantities = rest;
+    this.cartedProducts    = { ...this.cartedProducts, [product.id]: true };
   }
 
   // ── Routing ───────────────────────────────────────────────────
