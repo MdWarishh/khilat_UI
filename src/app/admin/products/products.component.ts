@@ -102,7 +102,7 @@ export class AdminProductsComponent implements OnInit {
       .set('size',  String(this.pageSize))
       .set('sort',  `${this.sortField},${this.sortDir}`);
 
-    if (this.filters.searchQuery.trim())  params = params.set('search',   this.filters.searchQuery.trim());
+    if (this.filters.searchQuery.trim())  params = params.set('keyword',   this.filters.searchQuery.trim());
     if (this.filters.filterCategory)      params = params.set('category', this.filters.filterCategory);
     if (this.filters.filterTrending)      params = params.set('trending', this.filters.filterTrending);
     if (this.filters.filterStatus)        params = params.set('status',   this.filters.filterStatus);

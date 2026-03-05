@@ -104,7 +104,7 @@ export class AdminOrdersComponent implements OnInit {
     }
 
     this.http.get<PageResponse<OrderSummaryDto>>(
-      `${environment.apiUrl}/admin/order-pending`,
+      `${environment.apiUrl}/admin/orders?status=PENDING`,
       { headers: this.authHeaders(), params }
     ).subscribe({
       next: (res) => {

@@ -99,7 +99,7 @@ export class AllProductsComponent implements OnInit, OnDestroy {
 
     // Debounced search
     this.searchSubject.pipe(
-      debounceTime(400),
+      debounceTime(600),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe(() => {

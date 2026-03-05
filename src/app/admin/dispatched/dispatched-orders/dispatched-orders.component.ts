@@ -66,7 +66,7 @@ export class DispatchedOrdersComponent implements OnInit {
       .set('size', String(this.pageSize));
 
     this.http.get<PageResponse<OrderSummaryDto>>(
-      `${environment.apiUrl}/admin/dispatched-orders`,
+      `${environment.apiUrl}/admin/orders?status=DISPATCHED`,
       { headers: this.authHeaders(), params }
     ).subscribe({
       next: (res) => {
