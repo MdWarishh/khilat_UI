@@ -22,7 +22,7 @@ export class ProductTableComponent {
   @Input() pageSize:      number    = 10;
   @Input() pageNumbers:   number[]  = [];
   @Input() sortField: 'name' | 'price' | 'stock' = 'name';
-  @Input() sortDir:   'asc'  | 'desc'             = 'asc';
+  @Input() sortDir:   'asc' | 'desc'              = 'asc';
 
   @Output() onView           = new EventEmitter<Product>();
   @Output() onEdit           = new EventEmitter<Product>();
@@ -32,54 +32,37 @@ export class ProductTableComponent {
   @Output() onPageSizeChange = new EventEmitter<number>();
   @Output() onClearFilters   = new EventEmitter<void>();
 
-  // Row expand karne ke liye
   expandedProductId: number | null = null;
 
   toggleExpand(id: number): void {
     this.expandedProductId = this.expandedProductId === id ? null : id;
   }
 
-  // Variants se min price
-  getMinPrice(p: Product): number {
-    if (!p.variants?.length) return 0;
-    return Math.min(...p.variants.map(v => v.price));
-  }
+  getMinPrice(p: Product): number { return p.variants?.length ? Math.min(...p.variants.map(v => v.price)) : 0; }
+  getMaxPrice(p: Product): number { return p.variants?.length ? Math.max(...p.variants.map(v => v.price)) : 0; }
 
-  // Variants se max price
-  getMaxPrice(p: Product): number {
-    if (!p.variants?.length) return 0;
-    return Math.max(...p.variants.map(v => v.price));
-  }
-
-  // Price range string
   getPriceDisplay(p: Product): string {
     if (!p.variants?.length) return '—';
-    const min = this.getMinPrice(p);
-    const max = this.getMaxPrice(p);
+    const min = this.getMinPrice(p), max = this.getMaxPrice(p);
     return min === max ? `₹${min}` : `₹${min} – ₹${max}`;
   }
 
-  // Total stock across all variants
   getTotalStock(p: Product): number {
-    if (!p.variants?.length) return 0;
-    return p.variants.reduce((sum, v) => sum + v.stock, 0);
+    return p.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0;
   }
 
-  // Stock chip class
   getStockClass(p: Product): string {
     const total = this.getTotalStock(p);
-    if (total === 0) return 'out';
+    if (total === 0)  return 'out';
     if (total <= 10) return 'low';
     return '';
   }
 
   getStockLabel(p: Product): string {
     const total = this.getTotalStock(p);
-    if (total === 0) return 'Out of Stock';
-    return String(total);
+    return total === 0 ? 'Out of Stock' : String(total);
   }
 
-  // First image
   getImage(p: Product): string {
     return p.productImages?.[0]?.imageUrl ?? '';
   }

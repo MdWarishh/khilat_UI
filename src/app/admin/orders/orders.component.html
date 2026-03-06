@@ -22,7 +22,6 @@
         <option *ngFor="let s of allStatuses" [value]="s.value">{{ s.label }}</option>
       </select>
 
-      <!-- Date filter -->
       <div class="date-pick-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,12 +42,15 @@
 
     </div>
 
-    <!-- FIX: Sirf 2 chips — Pending + Dispatched, real backend counts -->
+    <!-- Stat chips — pending from main API totalElements, dispatched from separate call -->
     <div class="stat-chips">
-      <div class="stat-chip" *ngFor="let s of statusStats"
-           [style.background]="s.bg" [style.color]="s.color">
-        <span class="chip-val">{{ s.count }}</span>
-        <span class="chip-lbl">{{ s.label }}</span>
+      <div class="stat-chip" style="background:rgba(245,158,11,0.12);color:#b45309">
+        <span class="chip-val">{{ totalElements }}</span>
+        <span class="chip-lbl">Pending</span>
+      </div>
+      <div class="stat-chip" style="background:rgba(139,92,246,0.1);color:#6d28d9">
+        <span class="chip-val">{{ dispatchedCount }}</span>
+        <span class="chip-lbl">Dispatched</span>
       </div>
     </div>
   </div>

@@ -1,63 +1,46 @@
 // admin/products/products.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule }      from '@angular/common';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { environment }       from '../../../environments/environments';
+import { environment } from '../../../environments/environments';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
-import {
-  Product, Category, ProductPage,
-  ProductFilters, ProductFormData
-} from '../../models/product.model';
-
-// Child components
+import { Product, Category, ProductPage, ProductFilters, ProductFormData } from '../../models/product.model';
 import { ProductFiltersComponent }     from './product-filters/product-filters.component';
 import { ProductTableComponent }       from './product-table/product-table.component';
 import { ProductDetailModalComponent } from './product-detail-modal/product-detail-modal.component';
 import { ProductFormModalComponent }   from './product-form-modal/product-form-modal.component';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [
-    CommonModule,
-    ProductFiltersComponent,
-    ProductTableComponent,
-    ProductDetailModalComponent,
-    ProductFormModalComponent,
-  ],
+  imports: [CommonModule, ProductFiltersComponent, ProductTableComponent, ProductDetailModalComponent, ProductFormModalComponent],
   templateUrl: './products.component.html',
-  styleUrl:    './products.component.css'
+  styleUrl: './products.component.css'
 })
-export class AdminProductsComponent implements OnInit {
+export class AdminProductsComponent implements OnInit, OnDestroy {
 
-
-  
+  private destroy$      = new Subject<void>();
   private searchSubject = new Subject<string>();
-  private lastSearchQuery: string = ''; // Pichli search ko yaad rakhne ke liye
 
-  // ── Data ──────────────────────────────────────
+  // ── Data ──
   products:   Product[]  = [];
   categories: Category[] = [];
 
-  // ── State ──────────────────────────────────────
+  // ── State ──
   loading = true;
   saving  = false;
   error   = '';
 
-  // ── Filters ────────────────────────────────────
-  filters: ProductFilters = {
-    searchQuery:    '',
-    filterCategory: '',
-    filterTrending: '',
-    filterStatus:   '',
-  };
+  // ── Filters ──
+  filters: ProductFilters = { searchQuery: '', filterCategory: '', filterTrending: '', filterStatus: '' };
 
-  // ── Sort ───────────────────────────────────────
+  // ── Sort ──
   sortField: 'name' | 'price' | 'stock' = 'name';
-  sortDir:   'asc'  | 'desc'            = 'asc';
+  sortDir:   'asc' | 'desc'             = 'asc';
 
-  // ── Pagination ─────────────────────────────────
+  // ── Pagination ──
   currentPage:   number   = 1;
   pageSize:      number   = 10;
   totalPages:    number   = 1;
@@ -66,26 +49,32 @@ export class AdminProductsComponent implements OnInit {
   endIndex:      number   = 0;
   pageNumbers:   number[] = [];
 
-  // ── Modals ─────────────────────────────────────
-  showDetails = false;
-  showForm    = false;
-
+  // ── Modals ──
+  showDetails      = false;
+  showForm         = false;
   selectedProduct: Product | null = null;
   editingProduct:  Product | null = null;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadProducts();
-    this.loadCategories();
-
+    // Single search debounce — ek hi jagah se loadProducts call hoga
     this.searchSubject.pipe(
       debounceTime(500),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
     ).subscribe(() => {
       this.currentPage = 1;
-      this.loadProducts(); // Ab ye sirf 500ms baad ek baar chalega
+      this.loadProducts();
     });
+
+    this.loadProducts();
+    this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ─────────────────────────────────────────────
@@ -94,20 +83,20 @@ export class AdminProductsComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    const headers = this.authHeaders();
 
-    // Backend ko saare filters + sort + pagination ek saath bhejo
     let params = new HttpParams()
-      .set('page',  String(this.currentPage - 1))  // backend 0-based page expect karta hai
-      .set('size',  String(this.pageSize))
-      .set('sort',  `${this.sortField},${this.sortDir}`);
+      .set('page', String(this.currentPage - 1))
+      .set('size', String(this.pageSize))
+      .set('sort', `${this.sortField},${this.sortDir}`);
 
-    if (this.filters.searchQuery.trim())  params = params.set('keyword',   this.filters.searchQuery.trim());
+    if (this.filters.searchQuery.trim())  params = params.set('keyword',  this.filters.searchQuery.trim());
     if (this.filters.filterCategory)      params = params.set('category', this.filters.filterCategory);
     if (this.filters.filterTrending)      params = params.set('trending', this.filters.filterTrending);
     if (this.filters.filterStatus)        params = params.set('status',   this.filters.filterStatus);
 
-    this.http.get<ProductPage>(`${environment.apiUrl}/product/getallproducts`, { headers, params })
+    this.http
+      .get<ProductPage>(`${environment.apiUrl}/product/getallproducts`, { headers: this.authHeaders(), params })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
           this.products      = res.content;
@@ -126,43 +115,37 @@ export class AdminProductsComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<Category[]>(`${environment.apiUrl}/categories/getAllCategories`).subscribe({
-      next:  (res) => { this.categories = res; },
-      error: ()    => { console.warn('Could not load categories'); }
-    });
+    // Sirf ek baar load hogi — categories static hain
+    this.http
+      .get<Category[]>(`${environment.apiUrl}/categories/getAllCategories`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next:  (res) => { this.categories = res; },
+        error: ()    => { console.warn('Could not load categories'); }
+      });
   }
 
   // ─────────────────────────────────────────────
-  // FILTER / SEARCH / SORT EVENTS (child se aate hain)
+  // FILTER / SEARCH / SORT
   // ─────────────────────────────────────────────
 
+  /**
+   * Child se ek hi event aata hai — yahan decide hota hai
+   * search debounce se jaayega ya direct loadProducts.
+   */
   onFiltersChange(newFilters: ProductFilters): void {
-    const newQuery = newFilters.searchQuery.trim();
-  
-    // Check karein ki kya SACH MEIN typing hui hai
-    if (this.lastSearchQuery !== newQuery) {
-        // Yaad rakhein ab naya word kya hai
-        this.lastSearchQuery = newQuery;
-        this.filters = { ...newFilters }; // Filter object update karein
-        
-        // Debounce ko bhejien
-        this.searchSubject.next(newQuery);
+    const prevQuery = this.filters.searchQuery.trim();
+    const newQuery  = newFilters.searchQuery.trim();
+    this.filters = { ...newFilters };
+
+    if (prevQuery !== newQuery) {
+      // Typing chal rahi hai — debounce lagao, direct call mat karo
+      this.searchSubject.next(newQuery);
     } else {
-        // Agar query same hai, matlab Category ya Status badla hai
-        this.filters = { ...newFilters };
-        this.currentPage = 1;
-        this.loadProducts();
+      // Category / Status / Trending badla — turant load karo
+      this.currentPage = 1;
+      this.loadProducts();
     }
-}
-
-  onSearch(): void {
-    this.currentPage = 1;  // Search hone par page 1 par reset karo
-    // this.loadProducts();
-  }
-
-  onClearSearch(): void {
-    this.currentPage = 1;
-    this.loadProducts();
   }
 
   onClearAllFilters(): void {
@@ -172,18 +155,14 @@ export class AdminProductsComponent implements OnInit {
   }
 
   onSort(field: 'name' | 'price' | 'stock'): void {
-    if (this.sortField === field) {
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortField = field;
-      this.sortDir   = 'asc';
-    }
+    this.sortDir     = this.sortField === field && this.sortDir === 'asc' ? 'desc' : 'asc';
+    this.sortField   = field;
     this.currentPage = 1;
     this.loadProducts();
   }
 
   // ─────────────────────────────────────────────
-  // PAGINATION EVENTS
+  // PAGINATION
   // ─────────────────────────────────────────────
 
   onPageChange(page: number): void {
@@ -199,33 +178,16 @@ export class AdminProductsComponent implements OnInit {
   }
 
   // ─────────────────────────────────────────────
-  // MODAL OPEN/CLOSE
+  // MODALS
   // ─────────────────────────────────────────────
 
-  openDetails(product: Product): void {
-    this.selectedProduct = product;
-    this.showDetails     = true;
-  }
-
-  openAddForm(): void {
-    this.editingProduct = null;
-    this.showForm       = true;
-  }
-
-  openEditForm(product: Product): void {
-    this.editingProduct = product;
-    this.showDetails    = false;  // detail modal band karo
-    this.showForm       = true;
-  }
-
-  closeForm(): void {
-    this.showForm       = false;
-    this.editingProduct = null;
-    this.error          = '';
-  }
+  openDetails(product: Product): void { this.selectedProduct = product; this.showDetails = true; }
+  openAddForm(): void                  { this.editingProduct = null; this.showForm = true; }
+  openEditForm(product: Product): void { this.editingProduct = product; this.showDetails = false; this.showForm = true; }
+  closeForm(): void                    { this.showForm = false; this.editingProduct = null; this.error = ''; }
 
   // ─────────────────────────────────────────────
-  // SAVE (ADD / EDIT)
+  // SAVE
   // ─────────────────────────────────────────────
 
   onFormSubmit(data: {
@@ -235,27 +197,22 @@ export class AdminProductsComponent implements OnInit {
     primaryImageId:  number | null;
     reorderedImages: { id: number }[];
   }): void {
-
     const { formData } = data;
+
     if (!formData.name.trim() || !formData.categoryId) {
-      this.error = 'Please fill all required fields (Name, Category)';
-      return;
+      this.error = 'Please fill all required fields (Name, Category)'; return;
     }
     if (!formData.variants.length) {
-      this.error = 'Kam se kam ek size variant add karo';
-      return;
+      this.error = 'Kam se kam ek size variant add karo'; return;
     }
     if (formData.variants.some(v => !v.size || !v.price)) {
-      this.error = 'Har variant me size aur price required hai';
-      return;
+      this.error = 'Har variant me size aur price required hai'; return;
     }
 
     this.saving = true;
     this.error  = '';
 
-    const headers = this.authHeaders();
     const payload = new FormData();
-
     payload.append('product', JSON.stringify({
       name:        formData.name.trim(),
       description: formData.description.trim(),
@@ -263,7 +220,7 @@ export class AdminProductsComponent implements OnInit {
       trending:    formData.trending,
       isActive:    formData.isActive,
       variants:    formData.variants.map(v => ({
-        ...(v.id ? { id: v.id } : {}),   // edit mode me id bhejo
+        ...(v.id ? { id: v.id } : {}),
         size:  v.size.trim(),
         price: Number(v.price),
         stock: Number(v.stock),
@@ -272,40 +229,24 @@ export class AdminProductsComponent implements OnInit {
 
     data.selectedFiles.forEach(file => payload.append('images', file));
 
+    const url = this.editingProduct
+      ? `${environment.apiUrl}/admin/updateproduct/${this.editingProduct.id}`
+      : `${environment.apiUrl}/admin/addproducts`;
+
     if (this.editingProduct) {
-      // Edit mode
-      if (data.primaryImageId) payload.append('primaryImageId', String(data.primaryImageId));
+      if (data.primaryImageId)        payload.append('primaryImageId', String(data.primaryImageId));
       if (data.deleteImageIds.length) payload.append('deleteImageIds', data.deleteImageIds.join(','));
-
-      this.http.post<Product>(
-        `${environment.apiUrl}/admin/updateproduct/${this.editingProduct.id}`,
-        payload, { headers }
-      ).subscribe({
-        next:  () => { this.onSaveSuccess(); },
-        error: (err) => { this.onSaveError(err); }
-      });
-
-    } else {
-      // Add mode
-      this.http.post<Product>(
-        `${environment.apiUrl}/admin/addproducts`,
-        payload, { headers }
-      ).subscribe({
-        next:  () => { this.onSaveSuccess(); },
-        error: (err) => { this.onSaveError(err); }
-      });
     }
-  }
 
-  private onSaveSuccess(): void {
-    this.saving = false;
-    this.closeForm();
-    this.loadProducts();
-  }
-
-  private onSaveError(err: any): void {
-    this.saving = false;
-    this.error  = err.error?.message || (this.editingProduct ? 'Failed to update product' : 'Failed to add product');
+    this.http.post<Product>(url, payload, { headers: this.authHeaders() })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next:  () => { this.saving = false; this.closeForm(); this.loadProducts(); },
+        error: (err) => {
+          this.saving = false;
+          this.error  = err.error?.message || (this.editingProduct ? 'Failed to update product' : 'Failed to add product');
+        }
+      });
   }
 
   // ─────────────────────────────────────────────
@@ -318,10 +259,11 @@ export class AdminProductsComponent implements OnInit {
     this.http.delete<string>(
       `${environment.apiUrl}/admin/deleteproduct/${id}`,
       { headers: this.authHeaders() }
-    ).subscribe({
-      next:  () => { this.loadProducts(); },
-      error: () => { this.error = 'Failed to delete product.'; }
-    });
+    ).pipe(takeUntil(this.destroy$))
+     .subscribe({
+       next:  () => { this.loadProducts(); },
+       error: () => { this.error = 'Failed to delete product.'; }
+     });
   }
 
   // ─────────────────────────────────────────────
@@ -329,17 +271,16 @@ export class AdminProductsComponent implements OnInit {
   // ─────────────────────────────────────────────
 
   private buildPageNumbers(): void {
-    const total   = this.totalPages;
-    const current = this.currentPage;
+    const total = this.totalPages, cur = this.currentPage;
     const pages: number[] = [];
 
     if (total <= 7) {
       for (let i = 1; i <= total; i++) pages.push(i);
     } else {
       pages.push(1);
-      if (current > 3)         pages.push(-1); // ellipsis
-      for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
-      if (current < total - 2) pages.push(-1); // ellipsis
+      if (cur > 3) pages.push(-1);
+      for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i);
+      if (cur < total - 2) pages.push(-1);
       pages.push(total);
     }
 
@@ -347,6 +288,6 @@ export class AdminProductsComponent implements OnInit {
   }
 
   private authHeaders(): HttpHeaders {
-    return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` });
+    return new HttpHeaders({ Authorization: `Bearer ${localStorage.getItem('admin_token')}` });
   }
 }

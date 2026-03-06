@@ -19,13 +19,31 @@
     </div>
   </div>
 
-  <!-- Bar chart -->
+  <!-- Bar Chart -->
   <div class="chart-body">
+
+    <!-- Y-axis grid lines (4 lines) -->
+    <div class="chart-grid" aria-hidden="true">
+      <div class="chart-grid-line"></div>
+      <div class="chart-grid-line"></div>
+      <div class="chart-grid-line"></div>
+      <div class="chart-grid-line"></div>
+    </div>
+
+    <!-- Bars -->
     <div class="bar-chart">
       <div class="bar-col" *ngFor="let bar of bars; let i = index">
+
+        <!-- Count badge above bar -->
         <div class="bar-value-wrap">
-          <span class="bar-count" *ngIf="bar.count > 0">{{ bar.count }}</span>
+          <span class="bar-count"
+                *ngIf="bar.count > 0"
+                [style.animation-delay]="(i * 0.08 + 0.4) + 's'">
+            {{ bar.count }}
+          </span>
         </div>
+
+        <!-- Bar track + fill -->
         <div class="bar-track">
           <div class="bar-fill"
                [style.height]="bar.pct + '%'"
@@ -33,19 +51,22 @@
                [class.bar-active]="bar.count === maxCount && maxCount > 0">
           </div>
         </div>
+
+        <!-- Labels -->
         <span class="bar-label">{{ bar.label }}</span>
         <span class="bar-date">{{ bar.date }}</span>
       </div>
     </div>
+
   </div>
 
-  <!-- Legend -->
+  <!-- Footer -->
   <div class="chart-footer">
     <div class="chart-legend">
       <span class="legend-dot"></span>
       <span class="legend-text">Orders per day</span>
     </div>
-    <span class="chart-note">Showing data from last 100 orders</span>
+    <span class="chart-note">Based on last 100 orders</span>
   </div>
 
 </div>

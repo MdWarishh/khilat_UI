@@ -3,7 +3,8 @@ import { Component, OnInit }    from '@angular/core';
 import { CommonModule }         from '@angular/common';
 import { RouterLink }           from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { forkJoin }             from 'rxjs';
+import { forkJoin, of }         from 'rxjs';
+import { catchError }           from 'rxjs/operators';
 import { environment }          from '../../../environments/environments';
 
 import { DashStatsCardsComponent }   from './stats-cards/stats-cards.component';
@@ -69,8 +70,7 @@ export class DashboardComponent implements OnInit {
 
   adminEmail = localStorage.getItem('admin_email') || 'admin';
   adminName  = this.adminEmail.split('@')[0];
-
-  greeting = this.getGreeting();
+  greeting   = this.getGreeting();
 
   constructor(private http: HttpClient) {}
 
@@ -78,49 +78,55 @@ export class DashboardComponent implements OnInit {
 
   private loadAll(): void {
     this.loading = true;
+    this.error   = '';
 
-    // Fetch orders (large page to compute stats), dispatched count, products, categories
-    const ordersReq     = this.http.get<PageResponse<OrderSummaryDto>>(
-      `${environment.apiUrl}/admin/order-pending`,
-      { headers: this.authHeaders(), params: new HttpParams().set('page', '0').set('size', '100') }
-    );
-    const dispatchedReq = this.http.get<PageResponse<OrderSummaryDto>>(
-      `${environment.apiUrl}/admin/dispatched-orders`,
-      { headers: this.authHeaders(), params: new HttpParams().set('page', '0').set('size', '1') }
-    );
-    const productsReq   = this.http.get<PageResponse<any>>(
-      `${environment.apiUrl}/admin/getallproducts`,
-      { headers: this.authHeaders(), params: new HttpParams().set('page', '0').set('size', '1') }
-    );
-    const catsReq       = this.http.get<any[]>(
-      `${environment.apiUrl}/categories/getAllCategories`
-    );
+    const h = this.authHeaders();
+    const op = (status: string, page: number, size: number) =>
+      new HttpParams().set('status', status).set('page', String(page)).set('size', String(size));
 
-    forkJoin({ orders: ordersReq, dispatched: dispatchedReq, products: productsReq, cats: catsReq })
-      .subscribe({
-        next: ({ orders, dispatched, products, cats }) => {
+    // 3 parallel calls — status param always present (API requires it)
+    forkJoin({
+      // PENDING: size=50 → recent list (slice 5) + chart data + revenue
+      pending:    this.http.get<PageResponse<OrderSummaryDto>>(
+                    `${environment.apiUrl}/admin/orders`,
+                    { headers: h, params: op('PENDING', 0, 50) }),
 
-          const pendingCount = orders.content.filter(o => o.orderStatus === 'PENDING').length;
-          const revenue      = orders.content.reduce((s, o) => s + (o.amount || 0), 0);
+      // DISPATCHED: size=1 → only need totalElements
+      dispatched: this.http.get<PageResponse<OrderSummaryDto>>(
+                    `${environment.apiUrl}/admin/orders`,
+                    { headers: h, params: op('DISPATCHED', 0, 1) }),
 
-          this.stats = {
-            totalOrders:      orders.totalElements,
-            pendingOrders:    pendingCount,
-            dispatchedOrders: dispatched.totalElements,
-            totalProducts:    products.totalElements,
-            totalCategories:  cats.length,
-            totalRevenue:     revenue,
-          };
+      // Products: size=1 → only need totalElements
+      products:   this.http.get<PageResponse<any>>(
+                    `${environment.apiUrl}/product/getallproducts`,
+                    { params: new HttpParams().set('page', '0').set('size', '1') }),
 
-          this.recentOrders      = orders.content.slice(0, 5);
-          this.allOrdersForChart = orders.content;
-          this.loading           = false;
-        },
-        error: () => {
-          this.error   = 'Could not load dashboard data.';
-          this.loading = false;
-        }
-      });
+      // Categories — with fallback so one failure doesn't kill dashboard
+      cats:       this.http.get<any[]>(
+                    `${environment.apiUrl}/categories/getAllCategories`)
+                    .pipe(catchError(() => of([]))),
+    }).subscribe({
+      next: ({ pending, dispatched, products, cats }) => {
+        const revenue = pending.content.reduce((s, o) => s + (o.amount || 0), 0);
+
+        this.stats = {
+          totalOrders:      pending.totalElements,
+          pendingOrders:    pending.totalElements,
+          dispatchedOrders: dispatched.totalElements,
+          totalProducts:    products.totalElements,
+          totalCategories:  Array.isArray(cats) ? cats.length : 0,
+          totalRevenue:     revenue,
+        };
+
+        this.recentOrders      = pending.content.slice(0, 5);
+        this.allOrdersForChart = pending.content;
+        this.loading           = false;
+      },
+      error: () => {
+        this.error   = 'Could not load dashboard data.';
+        this.loading = false;
+      }
+    });
   }
 
   private getGreeting(): string {
@@ -132,6 +138,6 @@ export class DashboardComponent implements OnInit {
 
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('admin_token') || '';
-    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 }

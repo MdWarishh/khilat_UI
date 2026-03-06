@@ -1,12 +1,11 @@
 // order-detail.component.ts
-import { Component, OnInit }       from '@angular/core';
-import { CommonModule }            from '@angular/common';
-import { ActivatedRoute, Router }  from '@angular/router';
+import { Component, OnInit }      from '@angular/core';
+import { CommonModule }           from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { FormsModule }             from '@angular/forms';
-import { environment }             from '../../../environments/environments';
+import { FormsModule }            from '@angular/forms';
+import { environment }            from '../../../environments/environments';
 
-// ── Matches ACTUAL backend response ──────────────────────────
 interface PaymentDto {
   id:            number;
   amount:        number;
@@ -15,14 +14,13 @@ interface PaymentDto {
 }
 
 interface OrderItemDto {
-  id:            number;
-  orderid:       number;
-  productId:     number;
-  quantity:      number;
-  price:         number;
-  productName:   string;
+  id:          number;
+  orderid:     number;
+  productId:   number;
+  quantity:    number;
+  price:       number;
+  productName: string;
   imageUrl?:     string;
-  stockLeft?:    number;
   categoryName?: string;
   size?:         string;
   color?:        string;
@@ -40,31 +38,29 @@ export interface OrderDetailResponse {
   createdAt: string;
   items:     OrderItemDto[];
 }
-// ─────────────────────────────────────────────────────────────
 
 interface TimelineStep { label: string; done: boolean; current: boolean; }
 
 @Component({
-  selector: 'app-order-detail',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  selector:    'app-order-detail',
+  standalone:  true,
+  imports:     [CommonModule, FormsModule],
   templateUrl: './order-detail.component.html',
-  styleUrl: './order-detail.component.css',
+  styleUrl:    './order-detail.component.css',
 })
 export class OrderDetailComponent implements OnInit {
 
-  order: OrderDetailResponse | null = null;
-  loading       = true;
-  error         = '';
-  actionLoading = false;
-  actionError   = '';
-  timeline: TimelineStep[] = [];
+  order:         OrderDetailResponse | null = null;
+  loading        = true;
+  error          = '';
+  actionLoading  = false;
+  actionError    = '';
+  timeline:      TimelineStep[] = [];
 
   selectedStatus = '';
   statusUpdating = false;
   statusSuccess  = false;
 
-  // Only allow up to CONFIRMED from this page
   readonly allStatuses = ['PENDING', 'CONFIRMED'];
 
   constructor(
@@ -79,9 +75,7 @@ export class OrderDetailComponent implements OnInit {
     else { this.error = 'Order ID not found.'; this.loading = false; }
   }
 
-  // ─────────────────────────────────────────────
-  // LOAD
-  // ─────────────────────────────────────────────
+  // ── Load ─────────────────────────────────────────────────────
 
   private loadOrder(id: number): void {
     this.http.get<OrderDetailResponse>(
@@ -95,19 +89,16 @@ export class OrderDetailComponent implements OnInit {
         this.loading        = false;
       },
       error: (err) => {
-        this.error   = err.error?.message || err.error || 'Failed to load order.';
+        this.error   = err.error?.message || 'Failed to load order.';
         this.loading = false;
       }
     });
   }
 
-  // ─────────────────────────────────────────────
-  // STATUS CHANGE — PATCH /admin/order/{id}/status
-  // ─────────────────────────────────────────────
+  // ── Status change ─────────────────────────────────────────────
 
   onStatusChange(): void {
     if (!this.order || this.selectedStatus === this.order.status) return;
-
     if (!confirm(`Change order #${this.order.id} status to "${this.selectedStatus}"?`)) {
       this.selectedStatus = this.order.status;
       return;
@@ -138,13 +129,10 @@ export class OrderDetailComponent implements OnInit {
     });
   }
 
-  // ─────────────────────────────────────────────
-  // CANCEL
-  // ─────────────────────────────────────────────
+  // ── Cancel ───────────────────────────────────────────────────
 
   cancelOrder(): void {
-    if (!this.order) return;
-    if (!confirm(`Cancel order #${this.order.id}?`)) return;
+    if (!this.order || !confirm(`Cancel order #${this.order.id}?`)) return;
 
     this.actionLoading = true;
     this.actionError   = '';
@@ -169,13 +157,10 @@ export class OrderDetailComponent implements OnInit {
     });
   }
 
-  // ─────────────────────────────────────────────
-  // HELPERS
-  // ─────────────────────────────────────────────
+  // ── Price helpers ─────────────────────────────────────────────
 
   getSubtotal(): number {
-    if (!this.order?.items?.length) return 0;
-    return this.order.items.reduce((sum, i) => sum + (i.price ), 0);
+    return this.order?.items?.reduce((sum, i) => sum + i.price * i.quantity, 0) ?? 0;
   }
 
   getTotalAmount(): number {
@@ -187,25 +172,26 @@ export class OrderDetailComponent implements OnInit {
     return diff > 0 ? diff : 0;
   }
 
+  // ── Misc helpers ──────────────────────────────────────────────
+
   resolveImage(url: string): string {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
     return `${environment.imageBaseUrl}${url}`;
   }
 
-  goBack(): void {
-    this.router.navigate(['/admin/orders']);
-  }
+  goBack(): void { this.router.navigate(['/admin/orders']); }
 
   private buildTimeline(status: string): TimelineStep[] {
-    const flow = ['PENDING', 'CONFIRMED', 'DISPATCHED', 'DELIVERED'];
+    const flow   = ['PENDING', 'CONFIRMED', 'DISPATCHED', 'DELIVERED'];
+    const labels = ['Order Placed', 'Confirmed', 'Dispatched', 'Delivered'];
     if (status === 'CANCELLED') return [
       { label: 'Order Placed', done: true,  current: false },
       { label: 'Cancelled',    done: false, current: true  },
     ];
     const idx = flow.indexOf(status);
-    return flow.map((s, i) => ({
-      label:   ['Order Placed', 'Confirmed', 'Dispatched', 'Delivered'][i],
+    return flow.map((_, i) => ({
+      label:   labels[i],
       done:    i < idx,
       current: i === idx,
     }));
@@ -213,6 +199,6 @@ export class OrderDetailComponent implements OnInit {
 
   private authHeaders(): { headers: HttpHeaders } {
     const token = localStorage.getItem('admin_token') || '';
-    return { headers: new HttpHeaders({ 'Authorization': `Bearer ${token}` }) };
+    return { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) };
   }
 }

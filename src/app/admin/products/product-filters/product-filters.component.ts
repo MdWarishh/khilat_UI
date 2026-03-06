@@ -1,5 +1,5 @@
 // admin/products/product-filters/product-filters.component.ts
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
 import { Category, ProductFilters } from '../../../models/product.model';
@@ -13,40 +13,32 @@ import { Category, ProductFilters } from '../../../models/product.model';
 })
 export class ProductFiltersComponent {
 
-  // Parent se categories aayegi
-  @Input() categories: Category[] = [];
+  @Input() categories: Category[]    = [];
+  @Input() filters:    ProductFilters = { searchQuery: '', filterCategory: '', filterTrending: '', filterStatus: '' };
 
-  // Parent se current filters milenge (two-way binding ke liye)
-  @Input()  filters: ProductFilters = {
-    searchQuery: '', filterCategory: '', filterTrending: '', filterStatus: ''
-  };
+  // Sirf ek output — parent khud decide karega kya karna hai
+  @Output() filtersChange = new EventEmitter<ProductFilters>();
+  @Output() onAddProduct  = new EventEmitter<void>();
 
-  // Jab koi filter change ho to parent ko batao
-  @Output() filtersChange  = new EventEmitter<ProductFilters>();
-  @Output() onSearch       = new EventEmitter<void>();
-  @Output() onClearSearch  = new EventEmitter<void>();
-  @Output() onClearAll     = new EventEmitter<void>();
-  @Output() onAddProduct   = new EventEmitter<void>();
-
-  handleSearch(): void {
+  // Search box me type hone par (ngModelChange se bind karo HTML me)
+  onSearchInput(): void {
     this.filtersChange.emit({ ...this.filters });
-    // this.onSearch.emit();
   }
 
-  handleFilterChange(): void {
+  // Dropdown change hone par
+  onDropdownChange(): void {
     this.filtersChange.emit({ ...this.filters });
-    this.onSearch.emit(); // parent ko loadProducts() call karne ka signal
   }
 
-  handleClearSearch(): void {
-    this.filters.searchQuery = '';
+  // Clear search button
+  clearSearch(): void {
+    this.filters = { ...this.filters, searchQuery: '' };
     this.filtersChange.emit({ ...this.filters });
-    this.onClearSearch.emit();
   }
 
-  handleClearAll(): void {
+  // Clear all filters
+  clearAll(): void {
     this.filters = { searchQuery: '', filterCategory: '', filterTrending: '', filterStatus: '' };
     this.filtersChange.emit({ ...this.filters });
-    this.onClearAll.emit();
   }
 }

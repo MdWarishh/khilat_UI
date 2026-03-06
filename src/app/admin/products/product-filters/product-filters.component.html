@@ -10,12 +10,12 @@
       </svg>
       <input class="search-input" type="text" placeholder="Search products..."
              [(ngModel)]="filters.searchQuery"
-             (input)="handleSearch()">
-      <button class="search-clear" *ngIf="filters.searchQuery" (click)="handleClearSearch()">✕</button>
+             (input)="onSearchInput()">
+      <button class="search-clear" *ngIf="filters.searchQuery" (click)="clearSearch()">✕</button>
     </div>
 
     <!-- Category Filter -->
-    <select class="filter-select" [(ngModel)]="filters.filterCategory" (change)="handleFilterChange()">
+    <select class="filter-select" [(ngModel)]="filters.filterCategory" (change)="onDropdownChange()">
       <option value="">All Categories</option>
       <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
     </select>
